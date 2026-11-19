@@ -9,7 +9,7 @@
 **看到某个应用里的功能，就给你的 Agent 一份同样的——走一条下个月还能用的接口。**
 
 [![CI](https://github.com/Zhang-Dongfang/connect-anything/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Zhang-Dongfang/connect-anything/actions/workflows/ci.yml)
-[![tests](https://img.shields.io/badge/tests-88_passing-1a7f37?style=flat-square)](#项目状态)
+[![tests](https://img.shields.io/badge/tests-95_passing-1a7f37?style=flat-square)](#项目状态)
 [![Node.js requirements](https://img.shields.io/badge/Node.js-%E2%89%A520-339933?style=flat-square&logo=nodedotjs&logoColor=white)](#能接什么)
 [![runtime dependencies](https://img.shields.io/badge/runtime_dependencies-0-5c4ee5?style=flat-square)](#项目状态)
 [![MCP tool catalog](https://img.shields.io/badge/MCP-tool_catalog-5c4ee5?style=flat-square)](#mcp-工具)
@@ -83,6 +83,7 @@ connect-anything 接着回答下一个问题：“我到底怎么让 Agent 真�
 它把 REA 当成固定版本的黑盒 CLI 来调用，做 Electron / JavaScript 应用的静态分析；分析之后的一切都归它：
 探测、选层、连接器规格、工具生成、凭据、健康检查。它是**伴生项目，不是 fork**；REA 升级只动一个文件
 （`src/rea.js`）。
+
 ## 快速开始
 
 ### 安装
@@ -224,6 +225,7 @@ HAR 就是 **HTTP Archive**：浏览器的每个请求都会被记进一份 JSON
 
 HAR 里有活的 Cookie 和 token，当密码处理：`*.har` 在本仓库是 gitignore 的，
 带真实账号流量的抓包共享前必须脱敏。
+
 ## 案例
 
 下面每个数字都来自本机真实运行，包括那些不好看的。
@@ -322,6 +324,7 @@ Text "显示为 12" autoId=CalculatorResults = "显示为 12"
 
 `cxa store` 目前只在 CLI 里：读数据库应该是一个**看得见、审得了**的动作，
 把它做成同样带只读护栏的工具已经列入 [路线图](../../ROADMAP.md)。
+
 ## 作为 Skill 使用
 
 给流程，不只给工具。MCP 给 Agent **工具**，Skill 给它**步骤**：先探测，在最好的一层上动手，
@@ -441,7 +444,7 @@ connect-anything 会继续说 `blocked`，不会绕开你。
 
 0.1.0，pre-1.0：连接器格式和 CLI 在小版本之间都可能变。今天存在的都是算得清的，不是许愿的：
 
-- **88 个测试**，本地与 CI 全绿（Ubuntu 与 Windows，Node 20 / 22 / 24）。
+- **95 个测试**，本地与 CI 全绿（Ubuntu 与 Windows，Node 20 / 22 / 24）。
 - **Skill 校验器**（`cxa skill --check`）会拒绝宿主会默默丢弃的 frontmatter。
 - **真机探测**：`Weixin 4.1.15.13` 与 `regedit`，fixture 全部保留，所以判定逻辑在 Linux 上也有单测。
 - **网易云音乐工具实测**：通过 MCP 真实返数据，包括那两个如实失败的。

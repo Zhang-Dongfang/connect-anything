@@ -9,7 +9,7 @@
 **See a feature in an app. Give your agent the same one — through an interface that keeps working.**
 
 [![CI](https://github.com/Zhang-Dongfang/connect-anything/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Zhang-Dongfang/connect-anything/actions/workflows/ci.yml)
-[![tests](https://img.shields.io/badge/tests-88_passing-1a7f37?style=flat-square)](#project-status)
+[![tests](https://img.shields.io/badge/tests-95_passing-1a7f37?style=flat-square)](#project-status)
 [![Node.js requirements](https://img.shields.io/badge/Node.js-%E2%89%A520-339933?style=flat-square&logo=nodedotjs&logoColor=white)](#what-you-can-connect)
 [![runtime dependencies](https://img.shields.io/badge/runtime_dependencies-0-5c4ee5?style=flat-square)](#project-status)
 [![MCP tool catalog](https://img.shields.io/badge/MCP-tool_catalog-5c4ee5?style=flat-square)](#mcp-tools)
@@ -93,16 +93,33 @@ checks. It is a companion, not a fork; a REA upgrade touches one file (`src/rea.
 
 Node.js 20 or newer, and nothing else: no runtime dependencies, no build step, no native module.
 
+There is no npm package to install: `connect-anything` on npm belongs to another project, so **this
+repository is the distribution**. Two ways in.
+
+**In Claude Code: install it from the plugin marketplace.** This repository is its own marketplace
+(`.claude-plugin/marketplace.json`) and the plugin ships both the skill and the MCP server:
+
+```text
+/plugin marketplace add Zhang-Dongfang/connect-anything
+/plugin install connect-anything
+```
+
+That gives you the skill procedure and a `connect-anything` stdio server from the next session on -
+no clone, no global install. The server entry uses `npx -y github:Zhang-Dongfang/connect-anything`,
+so the first call fetches `main`; on Windows you may need the `cmd /c npx` wrapper shown below.
+
+**Anywhere else: run it from git.** Each run fetches the current `main`:
+
+```bash
+npx -y github:Zhang-Dongfang/connect-anything --help
+```
+
+Or clone it and run it in place:
+
 ```bash
 git clone https://github.com/Zhang-Dongfang/connect-anything
 cd connect-anything
 node src/cli.js --help
-```
-
-Or run it straight from git without cloning. Each run fetches the current `main`:
-
-```bash
-npx -y github:Zhang-Dongfang/connect-anything --help
 ```
 
 `cxa store` additionally needs Node 22.5 or newer, because it uses the built-in `node:sqlite` driver.
@@ -187,6 +204,7 @@ Three invariants hold across every layer:
    value. Nothing secret is written to `~/.connect-anything/`.
 3. **`blocked` is a first-class state.** It is not “unknown”; it is “this is possible and we are
    refusing”, and it always ships with the reason.
+
 ## What you can connect
 
 Each row is something the project has actually been run against on a real machine, or a layer whose
@@ -239,6 +257,7 @@ means when the transport returned 200.
 
 A HAR contains live cookies and tokens. Treat it like a password: `*.har` is gitignored here, and
 captures with real account traffic must be scrubbed before they are shared.
+
 ## Case studies
 
 Every number below came from a real run on this machine, including the ones that are disappointing.
@@ -340,6 +359,7 @@ Six built-in tools plus one generated tool per observed endpoint:
 
 `cxa store` is CLI-only for now: reading a database is a deliberate, inspectable act, and it is on the
 [roadmap](ROADMAP.md) to expose it as a tool with the same read-only guards.
+
 ## Use it as a Skill (process, not just tools)
 
 MCP hands an agent tools. A Skill hands it the *procedure*: probe first, act on the best layer, capture
@@ -460,12 +480,13 @@ full output, and what you expected. A probe result that looks wrong is a bug wor
 the verdict was technically defensible.
 
 </details>
+
 ## Project status
 
 0.1.0, pre-1.0: the connector format and the CLI can still change between minor versions. What exists
 today is accounted for, not promised:
 
-- **88 tests**, all passing locally and on CI (Ubuntu and Windows, Node 20, 22 and 24).
+- **95 tests**, all passing locally and on CI (Ubuntu and Windows, Node 20, 22 and 24).
 - **The Skill validator** (``cxa skill --check``) refuses frontmatter that a host would silently drop.
 - **Real probe runs** on `Weixin 4.1.15.13` and `regedit`, with the fixtures kept so the judgements are
   tested on Linux too.
