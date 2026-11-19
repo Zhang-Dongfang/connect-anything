@@ -41,6 +41,30 @@ export CXA_MYAPP_AUTHORIZATION="Bearer ..."
 { "mcpServers": { "connect-anything": { "command": "npx", "args": ["-y", "connect-anything", "serve"] } } }
 ```
 
+### What a HAR actually is
+
+HAR stands for **HTTP Archive**: the JSON log a browser keeps of every request it made. In Chrome, Edge or
+Firefox: DevTools, Network tab, do the task **once**, right-click, *Save all as HAR with content*. That file
+is the raw material for `cxa har` - nothing more magical than a recording of traffic.
+
+```
+{ "log": { "entries": [ {
+    "request":  { "method": "GET", "url": "https://app.example.com/api/v1/projects?limit=20",
+                  "headers": [ { "name": "Authorization", "value": "Bearer ..." } ] },
+    "response": { "status": 200, "content": { "mimeType": "application/json", "text": "[{\"id\":101}]" } }
+} ] } }
+```
+
+What it does give you: real URLs, methods, headers, request and response bodies - in other words the endpoint
+inventory a connector is built from, with ids that can be turned into path parameters.
+
+What it does not give you: traffic that never went through that browser or Electron shell (native network
+stacks, IPC), the plaintext inside an encrypted body (`params=...&encSecKey=...` stays opaque), or what a
+business error really means when the transport returned 200.
+
+A HAR contains live cookies and tokens. Treat it like a password: `*.har` is gitignored here, and captures
+with real account traffic must be scrubbed before they are shared.
+
 ## Which layer does an app actually support? (cxa probe)
 
 Guessing wastes time. Run the probe against a running desktop app before falling back to pixels.
