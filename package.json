@@ -6,7 +6,7 @@
   "bin": { "cxa": "src/cli.js" },
   "files": ["src", "scripts", "skills", "specs", "docs"],
   "scripts": {
-    "test": "node --test test/*.test.js",
+    "test": "node --test",
     "check": "node src/cli.js skill --check",
     "verify": "npm test && npm run check"
   },
