@@ -1,0 +1,21 @@
+{
+  "name": "connect-anything",
+  "owner": { "name": "Zhang Dongfang", "url": "https://github.com/Zhang-Dongfang" },
+  "metadata": {
+    "description": "Turns a desktop app into MCP tools through the layer it really supports (official API, local store, private API, DevTools, accessibility), rather than screenshot and mouse.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "connect-anything",
+      "source": "./",
+      "description": "cxa: probe first, act on the best layer. Ships the skill procedure and the stdio MCP server.",
+      "version": "0.1.0",
+      "author": { "name": "Zhang Dongfang" },
+      "homepage": "https://github.com/Zhang-Dongfang/connect-anything",
+      "repository": "https://github.com/Zhang-Dongfang/connect-anything",
+      "license": "MIT",
+      "keywords": ["mcp", "desktop", "automation", "accessibility"]
+    }
+  ]
+}

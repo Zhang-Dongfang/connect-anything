@@ -1,0 +1,10 @@
+{
+  "name": "connect-anything",
+  "description": "Probe a desktop app, pick the integration layer it actually supports, and expose that as MCP tools or a skill procedure instead of clicking pixels.",
+  "version": "0.1.0",
+  "author": { "name": "Zhang Dongfang", "url": "https://github.com/Zhang-Dongfang" },
+  "homepage": "https://github.com/Zhang-Dongfang/connect-anything",
+  "repository": "https://github.com/Zhang-Dongfang/connect-anything",
+  "license": "MIT",
+  "keywords": ["mcp", "model-context-protocol", "desktop", "automation", "accessibility", "har", "reverse-engineering"]
+}

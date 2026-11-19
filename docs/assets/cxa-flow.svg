@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" role="img" aria-labelledby="cxaFlowTitle cxaFlowDesc">
+  <title id="cxaFlowTitle">How connect-anything works</title>
+  <desc id="cxaFlowDesc">Your agent calls cxa over MCP, cxa inspects the app's network, UI tree and disk locally, and returns evidence, a verdict and callable tools.</desc>
+  <defs>
+    <marker id="arrowF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8c959f"/>
+    </marker>
+    <marker id="arrowA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8250df"/>
+    </marker>
+  </defs>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <rect x="24" y="120" width="250" height="170" rx="14" fill="#8250df" fill-opacity="0.06" stroke="#8250df"/>
+    <text x="149" y="158" font-size="17" font-weight="600" fill="#57606a" text-anchor="middle">Your agent</text>
+    <text x="149" y="182" font-size="12" fill="#8c959f" text-anchor="middle">Claude Code &#183; Codex &#183; Cursor</text>
+    <text x="149" y="200" font-size="12" fill="#8c959f" text-anchor="middle">Conexus &#183; any MCP client</text>
+    <text x="149" y="240" font-size="12" fill="#6e7781" text-anchor="middle">asks: &#8220;which layer works?&#8221;</text>
+    <text x="149" y="258" font-size="12" fill="#6e7781" text-anchor="middle">then: &#8220;send this message&#8221;</text>
+
+    <rect x="366" y="96" width="300" height="218" rx="14" fill="none" stroke="#8c959f"/>
+    <text x="516" y="130" font-size="17" font-weight="600" fill="#57606a" text-anchor="middle">cxa &#183; MCP server</text>
+    <text x="516" y="150" font-size="12" fill="#8c959f" text-anchor="middle">stdio JSON-RPC, zero dependencies</text>
+    <text x="392" y="186" font-size="14" fill="#6e7781">probe</text>
+    <text x="466" y="186" font-size="12" fill="#8c959f">which layers exist, with evidence</text>
+    <text x="392" y="214" font-size="14" fill="#6e7781">route</text>
+    <text x="466" y="214" font-size="12" fill="#8c959f">pick the strongest one, list fallbacks</text>
+    <text x="392" y="242" font-size="14" fill="#6e7781">har</text>
+    <text x="466" y="242" font-size="12" fill="#8c959f">capture to connector to tools</text>
+    <text x="392" y="270" font-size="14" fill="#6e7781">store &#183; act</text>
+    <text x="466" y="270" font-size="12" fill="#8c959f">read the data, or drive named controls</text>
+
+    <rect x="730" y="110" width="246" height="190" rx="14" fill="none" stroke="#8c959f" stroke-dasharray="4 4"/>
+    <text x="853" y="148" font-size="17" font-weight="600" fill="#57606a" text-anchor="middle">The app</text>
+    <text x="853" y="172" font-size="12" fill="#8c959f" text-anchor="middle">network &#183; UI tree &#183; disk</text>
+    <text x="853" y="206" font-size="12" fill="#6e7781" text-anchor="middle">stays on your machine</text>
+    <text x="853" y="224" font-size="12" fill="#6e7781" text-anchor="middle">nothing is uploaded</text>
+    <text x="853" y="256" font-size="12" fill="#8c959f" text-anchor="middle">facts only, no verdicts</text>
+
+    <line x1="278" y1="180" x2="358" y2="180" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrowF)"/>
+    <text x="318" y="170" font-size="11" fill="#8c959f" text-anchor="middle">tools/call</text>
+    <line x1="358" y1="230" x2="278" y2="230" stroke="#8250df" stroke-width="1.5" marker-end="url(#arrowA)"/>
+    <text x="318" y="250" font-size="11" fill="#8250df" text-anchor="middle">evidence + tools</text>
+
+    <line x1="670" y1="180" x2="722" y2="180" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrowF)"/>
+    <text x="696" y="170" font-size="11" fill="#8c959f" text-anchor="middle">inspect</text>
+    <line x1="722" y1="230" x2="670" y2="230" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrowF)"/>
+    <text x="696" y="250" font-size="11" fill="#8c959f" text-anchor="middle">facts</text>
+
+    <text x="24" y="366" font-size="12" fill="#8c959f">A connector is plain JSON in ~/.connect-anything/connectors: reviewable, diffable, shareable.</text>
+    <text x="24" y="388" font-size="12" fill="#8c959f">Credentials are only ever stored as environment-variable names.</text>
+  </g>
+</svg>

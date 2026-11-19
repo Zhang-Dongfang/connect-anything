@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "connect-anything": {
+      "command": "npx",
+      "args": ["-y", "github:Zhang-Dongfang/connect-anything", "serve"]
+    }
+  }
+}

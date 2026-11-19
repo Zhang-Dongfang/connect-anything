@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500" width="960" height="500" role="img" aria-labelledby="cxaTitle cxaDesc">
+  <title id="cxaTitle">connect-anything layer ladder</title>
+  <desc id="cxaDesc">Seven integration layers ordered from official API at the top to computer use at the bottom, each with the evidence a probe looks for.</desc>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <text x="80" y="30" font-size="13" fill="#8c959f">Try first &#183; strongest guarantee, smallest blast radius</text>
+
+    <g>
+      <circle cx="56" cy="72" r="14" fill="none" stroke="#8250df"/>
+      <text x="56" y="77" font-size="12" fill="#8250df" text-anchor="middle">1</text>
+      <rect x="80" y="50" width="300" height="44" rx="10" fill="#8250df" fill-opacity="0.07" stroke="#8250df"/>
+      <text x="96" y="70" font-size="15" font-weight="600" fill="#57606a">official-api</text>
+      <text x="96" y="86" font-size="12" fill="#8c959f">the vendor&#8217;s own API, CLI or MCP</text>
+      <text x="404" y="70" font-size="12" fill="#8c959f">Evidence a probe looks for</text>
+      <text x="404" y="86" font-size="12" fill="#6e7781">a registered vendor connector, or a documented endpoint</text>
+    </g>
+
+    <g>
+      <circle cx="56" cy="130" r="14" fill="none" stroke="#8c959f"/>
+      <text x="56" y="135" font-size="11" fill="#8c959f" text-anchor="middle">2.5</text>
+      <rect x="80" y="108" width="300" height="44" rx="10" fill="#8c959f" fill-opacity="0.07" stroke="#8c959f"/>
+      <text x="96" y="128" font-size="15" font-weight="600" fill="#57606a">local-store</text>
+      <text x="96" y="144" font-size="12" fill="#8c959f">plaintext SQLite on disk</text>
+      <text x="404" y="128" font-size="12" fill="#6e7781">a &#8220;SQLite format 3&#8221; header and no key required</text>
+      <text x="404" y="144" font-size="12" fill="#8c959f">SQLCipher databases come back blocked, not guessed at</text>
+    </g>
+
+    <g>
+      <circle cx="56" cy="188" r="14" fill="none" stroke="#8c959f"/>
+      <text x="56" y="193" font-size="12" fill="#8c959f" text-anchor="middle">3</text>
+      <rect x="80" y="166" width="300" height="44" rx="10" fill="#8c959f" fill-opacity="0.07" stroke="#8c959f"/>
+      <text x="96" y="186" font-size="15" font-weight="600" fill="#57606a">private-api</text>
+      <text x="96" y="202" font-size="12" fill="#8c959f">HTTP or WebSocket endpoints from a capture</text>
+      <text x="404" y="186" font-size="12" fill="#6e7781">JSON endpoints in a HAR capture</text>
+      <text x="404" y="202" font-size="12" fill="#8c959f">loopback-only IPC also lands here, and is reported blocked</text>
+    </g>
+
+    <g>
+      <circle cx="56" cy="246" r="14" fill="none" stroke="#8c959f"/>
+      <text x="56" y="251" font-size="11" fill="#8c959f" text-anchor="middle">3.5</text>
+      <rect x="80" y="224" width="300" height="44" rx="10" fill="#8c959f" fill-opacity="0.07" stroke="#8c959f"/>
+      <text x="96" y="244" font-size="15" font-weight="600" fill="#57606a">devTools</text>
+      <text x="96" y="260" font-size="12" fill="#8c959f">Chrome DevTools Protocol</text>
+      <text x="404" y="244" font-size="12" fill="#6e7781">a listening port and a reachable /json/version</text>
+      <text x="404" y="260" font-size="12" fill="#8c959f">works for Electron and Chromium shells, not for Qt apps</text>
+    </g>
+
+    <g>
+      <circle cx="56" cy="304" r="14" fill="none" stroke="#8c959f"/>
+      <text x="56" y="309" font-size="12" fill="#8c959f" text-anchor="middle">4</text>
+      <rect x="80" y="282" width="300" height="44" rx="10" fill="#8c959f" fill-opacity="0.07" stroke="#8c959f"/>
+      <text x="96" y="302" font-size="15" font-weight="600" fill="#57606a">accessibility</text>
+      <text x="96" y="318" font-size="12" fill="#8c959f">UIA and MSAA control trees</text>
+      <text x="404" y="302" font-size="12" fill="#6e7781">named controls, or legacy Sys* window classes</text>
+      <text x="404" y="318" font-size="12" fill="#8c959f">actions are by name, never by coordinate</text>
+    </g>
+
+    <g>
+      <circle cx="56" cy="362" r="14" fill="none" stroke="#8c959f"/>
+      <text x="56" y="367" font-size="12" fill="#8c959f" text-anchor="middle">6</text>
+      <rect x="80" y="340" width="300" height="44" rx="10" fill="#8c959f" fill-opacity="0.07" stroke="#8c959f"/>
+      <text x="96" y="360" font-size="15" font-weight="600" fill="#57606a">scripting</text>
+      <text x="96" y="376" font-size="12" fill="#8c959f">URL scheme, COM, AppleScript</text>
+      <text x="404" y="360" font-size="12" fill="#6e7781">a protocol handler registered for the app</text>
+      <text x="404" y="376" font-size="12" fill="#8c959f">coarse: it opens the app, it does not drive it</text>
+    </g>
+
+    <g>
+      <circle cx="56" cy="420" r="14" fill="none" stroke="#8c959f" stroke-dasharray="3 3"/>
+      <text x="56" y="425" font-size="12" fill="#8c959f" text-anchor="middle">9</text>
+      <rect x="80" y="398" width="300" height="44" rx="10" fill="#8c959f" fill-opacity="0.04" stroke="#8c959f" stroke-dasharray="4 4"/>
+      <text x="96" y="418" font-size="15" font-weight="600" fill="#57606a">computer-use</text>
+      <text x="96" y="434" font-size="12" fill="#8c959f">screen, keyboard, mouse</text>
+      <text x="404" y="418" font-size="12" fill="#6e7781">nothing to probe: it is always available</text>
+      <text x="404" y="434" font-size="12" fill="#8c959f">and always the most fragile, so it is always last</text>
+    </g>
+
+    <text x="80" y="478" font-size="13" fill="#8c959f">Every layer reports one of four states: available &#183; blocked &#183; unavailable &#183; unknown</text>
+  </g>
+</svg>

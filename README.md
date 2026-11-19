@@ -1,54 +1,228 @@
-# connect-anything (cxa)
+<div align="center">
 
-> Find the cheapest reliable way into an app, then turn that layer into MCP tools. Probe once, stop at the first layer that works, and keep computer use as the documented last resort.
+**English** · [简体中文](docs/readme/README_zh.md)
 
-**REA** ([morluto/rea](https://github.com/morluto/rea)) answers *"how does this app work?"*.
-**connect-anything** answers *"now let my agent operate it"*: it turns what was learned into callable, tested MCP tools, and routes every request to the most reliable layer available, with computer use as the last resort.
+# connect-anything: one layer below the pixels
 
-```
-official API  >  local data store (plain SQLite)  >  reversed private API  >  DevTools  >  accessibility tree  >  OS scripting  >  computer use
-```
+### One MCP server that turns what an app already exposes into tools your agent can call.
 
-## Relationship to REA
+**See a feature in an app. Give your agent the same one — through an interface that keeps working.**
 
-connect-anything is a **companion**, not a fork. It calls REA (`rea-agents`, MIT) as a pinned, black-box CLI for analysis, and owns everything after analysis: connector specs, tool generation, credentials, routing, and health checks. REA upgrades only touch `src/rea.js`.
+[![CI](https://github.com/Zhang-Dongfang/connect-anything/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Zhang-Dongfang/connect-anything/actions/workflows/ci.yml)
+[![tests](https://img.shields.io/badge/tests-88_passing-1a7f37?style=flat-square)](#project-status)
+[![Node.js requirements](https://img.shields.io/badge/Node.js-%E2%89%A520-339933?style=flat-square&logo=nodedotjs&logoColor=white)](#what-you-can-connect)
+[![runtime dependencies](https://img.shields.io/badge/runtime_dependencies-0-5c4ee5?style=flat-square)](#project-status)
+[![MCP tool catalog](https://img.shields.io/badge/MCP-tool_catalog-5c4ee5?style=flat-square)](#mcp-tools)
+[![agent skill](https://img.shields.io/badge/agent_skill-SKILL.md-8250df?style=flat-square)](#use-it-as-a-skill-process-not-just-tools)
+[![MIT license](https://img.shields.io/badge/license-MIT-f4c430?style=flat-square)](LICENSE)
 
-## Prior art (and where this differs)
+**[Case studies](#case-studies) · [Architecture](docs/architecture.md) · [Roadmap](ROADMAP.md)**
 
-This corner of the ecosystem is crowded, and pretending otherwise would be dishonest:
+[Quick start](#quick-start) · [How cxa works](#how-cxa-works) · [What you can connect](#what-you-can-connect) · [Prior art](#prior-art-and-where-this-differs) · [FAQ](#faq) · [Documentation](#documentation)
 
-| project | what it does | how this differs |
-|---|---|---|
-| [alufers/mitmproxy2swagger](https://github.com/alufers/mitmproxy2swagger) | mitmproxy captures or HAR to OpenAPI 3.0 | this emits callable MCP tools; OpenAPI is a spec for other generators |
-| [hydope/har2mcp](https://github.com/hydope/har2mcp) | HAR to a standalone MCP server, secrets in env vars | same conversion step; here it comes after a probe that decides whether to convert at all, and there is a local-store layer and a router on top |
-| [morluto/rea](https://github.com/morluto/rea) | agent-driven reverse engineering, down to native binaries | REA analyses; this project owns what happens after the analysis |
-| [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp) | browser automation over accessibility snapshots | not replaced: `devTools` and `accessibility` are layers this router sends work to |
-| [WeChat MCP/CLI projects](https://github.com/zwl467135974/wechat-cli) | decrypt the local store or drive the UI with `wxauto` | cited as evidence in `docs/weixin.md`, not vendored; this project reports `blocked` instead of extracting keys |
+<code>npx -y github:Zhang-Dongfang/connect-anything probe CalculatorApp</code>
 
-Only projects that were actually inspected are listed. Absence here is not a claim of absence in the world.
+</div>
+
+> [!IMPORTANT]
+> Get connect-anything from [Zhang-Dongfang/connect-anything](https://github.com/Zhang-Dongfang/connect-anything).
+> There is **no official npm package**: the name `connect-anything` on npm belongs to a different
+> project, so `npx connect-anything` runs somebody else's code. Install from this repository
+> (`npx -y github:Zhang-Dongfang/connect-anything`, a clone, or `node src/cli.js`).
+> A similar repository name, a copied README, or a lookalike package does not make a download official.
+
+<div align="center">
+
+<br />
+
+<img src="docs/assets/cxa-layers.svg" alt="connect-anything layer ladder: official API first, computer use last, with the evidence a probe looks for at each layer" width="960" />
+
+<br /><br />
+
+<table aria-label="connect-anything community">
+<tr>
+<td align="center" width="300">
+  <a href="https://github.com/Zhang-Dongfang/connect-anything/discussions">
+    <strong>Ask in Discussions</strong>
+  </a><br />
+  <sub>“How do I…” · show and tell</sub>
+</td>
+<td align="center" width="300">
+  <a href="https://github.com/Zhang-Dongfang/connect-anything/labels/good%20first%20issue">
+    <strong>Pick a good first issue</strong>
+  </a><br />
+  <sub>Every one carries acceptance criteria</sub>
+</td>
+<td align="center" width="300">
+  <a href="https://github.com/Zhang-Dongfang/connect-anything/issues">
+    <strong>Report a blocked layer</strong>
+  </a><br />
+  <sub>A negative result is a result</sub>
+</td>
+</tr>
+</table>
+
+<br />
+
+</div>
+
+---
+See a feature in an app that you want in your own product, or a task you want an agent to do inside
+an app you already run. [REA](https://github.com/morluto/rea) answers *“how does this app work?”*, down
+to the binary. connect-anything answers the next question: *“how do I get my agent to actually do the
+thing in that app, and what is the cheapest route that will still work next month?”*
+
+You export a capture, or point it at a running window, and it replies in the currency REA uses:
+findings with evidence. Which layers does this app support? Which one should be tried first? What does
+the connector look like once it is built? What is left when everything stronger is unavailable?
+
+What makes it different from most automation is that it is allowed to say **no**. A layer that exists
+but should not be pushed — an encrypted store with no key on disk, a window that exposes four named
+controls and draws the rest, a loopback-only IPC channel — comes back as `blocked` with its reason,
+and the agent is told to fall back instead of reaching for screenshots or for someone's decryption
+tool. That refusal is a feature: it is the difference between an agent that reports what it cannot do
+and one that quietly burns an account finding out.
+
+It calls REA as a pinned, black-box CLI for static analysis of Electron and JavaScript apps, and owns
+everything after that: probing, routing, connector specs, tool generation, credentials and health
+checks. It is a companion, not a fork; a REA upgrade touches one file (`src/rea.js`).
 
 ## Quick start
 
+### Install
+
+Node.js 20 or newer, and nothing else: no runtime dependencies, no build step, no native module.
+
 ```bash
-# 1. Use the app in a browser / Electron devtools and export a HAR
-# 2. Reverse it into a connector
-npx connect-anything har capture.har --name myapp
-# 3. Provide credentials via env (never written to disk)
-export CXA_MYAPP_AUTHORIZATION="Bearer ..."
-# 4. Register the MCP server in your agent
+git clone https://github.com/Zhang-Dongfang/connect-anything
+cd connect-anything
+node src/cli.js --help
 ```
 
-```json
-{ "mcpServers": { "connect-anything": { "command": "npx", "args": ["-y", "connect-anything", "serve"] } } }
+Or run it straight from git without cloning. Each run fetches the current `main`:
+
+```bash
+npx -y github:Zhang-Dongfang/connect-anything --help
 ```
+
+`cxa store` additionally needs Node 22.5 or newer, because it uses the built-in `node:sqlite` driver.
+Every other command works on Node 20, and `cxa store` says exactly what it is missing rather than
+falling over.
+
+### Register it with your agent
+
+Any MCP client that can start a stdio server works. For a git install, point the command at the
+repository:
+
+```json
+{
+  "mcpServers": {
+    "connect-anything": {
+      "command": "npx",
+      "args": ["-y", "github:Zhang-Dongfang/connect-anything", "serve"]
+    }
+  }
+}
+```
+
+On Windows, wrap it in the shell, because `npx` is a `.cmd` shim:
+
+```json
+{ "command": "cmd", "args": ["/c", "npx", "-y", "github:Zhang-Dongfang/connect-anything", "serve"] }
+```
+
+Then optionally hand the agent the procedure as well as the tools — see
+[Use it as a Skill](#use-it-as-a-skill-process-not-just-tools). Restart the agent after changing its
+MCP configuration.
+
+### Ask your agent
+
+```text
+Probe the Weixin desktop client with cxa, show me the evidence behind each layer,
+and tell me the cheapest reliable way to send a message. If every layer is blocked,
+say so and stop there — do not fall back to screenshots on your own.
+```
+
+Replace the app and the task with yours. A good answer names the layer it chose, the evidence behind
+it, and what it deliberately did not try.
+
+### Use the terminal
+
+The same capabilities, without an agent in the middle:
+
+```bash
+cxa probe CalculatorApp                        # which layers does this app support?
+cxa har capture.har --name myapp               # reverse a private API into MCP tools
+cxa store "%LOCALAPPDATA%\NetEase\CloudMusic\NIM"   # read a local SQLite store, read-only
+cxa act notepad --name "文本编辑器" --get-text  # drive named controls, no pixels
+cxa list                                       # installed connectors and missing credentials
+cxa serve                                      # the MCP server on stdio
+```
+
+### Keep it current
+
+The project is pre-1.0 and moves: the connector format and the CLI can still change between minor
+versions. `npx -y github:…` always runs the current `main`; a clone updates with `git pull`.
+
+## How cxa works
+
+Your agent asks a question, and cxa answers it by inspecting the app instead of guessing: it reads
+the process list, the listening sockets, the accessibility tree, the on-disk store and any recorded
+traffic. It returns findings with the evidence it used, plus a routing decision — one layer to use,
+an ordered list of fallbacks, and the reasons a stronger layer was refused.
+
+The agent then either explains what it found or calls the generated tool. Both paths go through the
+same layer table, so a terminal session and an agent session never disagree about what is possible.
+
+<img src="docs/assets/cxa-flow.svg" alt="Your agent calls cxa over MCP; cxa inspects the app's network, UI tree and disk locally; the agent gets evidence and callable tools back" width="1000" />
+
+[Open the full-size figure](docs/assets/cxa-flow.svg).
+
+Three invariants hold across every layer:
+
+1. **Evidence or silence.** Every verdict carries the facts it was derived from, so it can be
+   reproduced or argued with. `probe-win.ps1` collects facts; `probe.js` makes judgements — which is
+   why the judgement rules are unit-tested on Linux CI against captured JSON fixtures.
+2. **Credentials are names.** A connector stores the *name* of an environment variable, never the
+   value. Nothing secret is written to `~/.connect-anything/`.
+3. **`blocked` is a first-class state.** It is not “unknown”; it is “this is possible and we are
+   refusing”, and it always ships with the reason.
+## What you can connect
+
+Each row is something the project has actually been run against on a real machine, or a layer whose
+probe is covered by fixtures. The third column is what it needs from you, not a wish list.
+
+| Target | What cxa returns | Requirements and command |
+| --- | --- | --- |
+| Web apps, and any HTTP surface you can record | Endpoint inventory, a connector, one tool per endpoint, path parameters and required fields inferred from the samples | A HAR from Chrome, Edge or Firefox: `cxa har capture.har --name myapp` |
+| Electron and JavaScript apps | Candidate endpoints, modules and IPC boundaries from static analysis, then a capture to confirm which ones carry data | Node 20+, optional REA CLI; MCP tool `cxa_rea_analyze_app` |
+| Encrypted request envelopes (NetEase weapi style) | A connector that keeps the encryption, flags which bodies were opaque in the capture, and exposes the tools anyway | `cxa har … --augment specs/netease.json` · [case study](docs/netease.md) |
+| Desktop apps with real controls (Win32, WPF, UWP) | Named controls, the patterns each one exposes, and a verified state change after acting | Windows: `cxa probe <exe>` then `cxa act <exe>` |
+| Legacy MSAA-only apps (`regedit`) | The exposed control classes, even when modern UIA shows almost nothing | Windows: `cxa probe regedit` |
+| Self-drawn UI (Qt, Flutter, games) | A `blocked` accessibility verdict with the evidence — “computer use is the only path”, said out loud | Windows: `cxa probe <exe>` |
+| Plaintext SQLite on disk | Tables, columns and read-only queries against the app's own data, no UI automation | Node 22.5+: `cxa store "<dir>" --tables` / `--sql "select …"` |
+| Encrypted stores (SQLCipher, WeChat 4.x) | `blocked`, with the file count, the size and the reason — no key extraction attempted | `cxa probe <exe> --find-store "<hints>"` |
+| Apps that only talk over loopback IPC | `blocked` private-api, with the listener inventory that proves it is not replayable | Windows: `cxa probe <exe>` |
+| Mini-program runtimes inside a desktop app | A devTools verdict that says why CDP is unreachable rather than pretending it might work | Windows: `cxa probe <exe>` |
+| URL schemes, COM, AppleScript | The scripting layer: it opens the app, and the verdict says that is all it does | Windows: `cxa probe <exe>` |
+| Everything else | Computer use — always available, always last, and never chosen silently | Documented, not hidden: [architecture](docs/architecture.md#3-分层接入模型) |
+
+What it deliberately does not do: extract keys from process memory, defeat anti-automation checks,
+decrypt an encrypted store, or use a vendor's private credentials. Those are other products. When a
+layer needs one of them, the answer is `blocked` and the project says so in public —
+[the WeChat case study](docs/weixin.md) exists for exactly that reason.
+
+Calling a private API may violate a service's terms even when the technique works. That is your call
+to make, not something the tool can make for you.
 
 ### What a HAR actually is
 
-HAR stands for **HTTP Archive**: the JSON log a browser keeps of every request it made. In Chrome, Edge or
-Firefox: DevTools, Network tab, do the task **once**, right-click, *Save all as HAR with content*. That file
-is the raw material for `cxa har` - nothing more magical than a recording of traffic.
+HAR stands for **HTTP Archive**: the JSON log a browser keeps of every request it made. In Chrome,
+Edge or Firefox: open DevTools, open the Network tab, do the task **once**, right-click,
+*Save all as HAR with content*. That file is the raw material for `cxa har` — nothing more magical
+than a recording of traffic.
 
-```
+```json
 { "log": { "entries": [ {
     "request":  { "method": "GET", "url": "https://app.example.com/api/v1/projects?limit=20",
                   "headers": [ { "name": "Authorization", "value": "Bearer ..." } ] },
@@ -56,92 +230,61 @@ is the raw material for `cxa har` - nothing more magical than a recording of tra
 } ] } }
 ```
 
-What it does give you: real URLs, methods, headers, request and response bodies - in other words the endpoint
-inventory a connector is built from, with ids that can be turned into path parameters.
+What it gives you: real URLs, methods, headers, request and response bodies — the endpoint inventory a
+connector is built from, with ids that can become path parameters.
 
-What it does not give you: traffic that never went through that browser or Electron shell (native network
-stacks, IPC), the plaintext inside an encrypted body (`params=...&encSecKey=...` stays opaque), or what a
-business error really means when the transport returned 200.
+What it does not give you: traffic that never went through that browser (native network stacks, IPC),
+the plaintext inside an encrypted body (`params=…&encSecKey=…` stays opaque), or what a business error
+means when the transport returned 200.
 
-A HAR contains live cookies and tokens. Treat it like a password: `*.har` is gitignored here, and captures
-with real account traffic must be scrubbed before they are shared.
+A HAR contains live cookies and tokens. Treat it like a password: `*.har` is gitignored here, and
+captures with real account traffic must be scrubbed before they are shared.
+## Case studies
 
-## Which layer does an app actually support? (cxa probe)
+Every number below came from a real run on this machine, including the ones that are disappointing.
 
-Guessing wastes time. Run the probe against a running desktop app before falling back to pixels.
+### Weixin: a negative result, reported in full
 
-```bash
-npx connect-anything probe Weixin
-```
+`Weixin 4.1.15.13` on Windows — a Qt app that draws its own UI. The probe ran, the answer was *no*,
+and the useful part is why:
 
-It prints one verdict per layer with the evidence it used, and tells the router what to pick.
+| Layer | Status | Evidence |
+| --- | --- | --- |
+| official-api | unknown | no vendor API registered |
+| private-api | **blocked** | 5 loopback-only IPC listeners |
+| devTools | unavailable | mini-program runtime only, no remote debugging port |
+| accessibility | **blocked** | `namedControls=4`; `Qt51514QWindowIcon`, `MMUIRenderSubWindowHW` |
+| local-store | **blocked** | 24 SQLCipher databases, 1.05 GB, key absent from disk **and** memory |
+| scripting | available | `weixin://`, deep link only |
 
-### The local data layer
+Key recovery was tried honestly before being declared out of scope: `key_info.dat` is 180 bytes of
+high-entropy data with no key in it; `ReadProcessMemory` reads 1041 MB in 2.2 s and finds none of the
+classic WCDB `x'<key><salt>'` patterns; a Frida hook on `bcrypt!BCryptDeriveKeyPBKDF2` recorded zero
+calls across 30 seconds of live use. That reproduces upstream issue wx-cli#89: WeChat 4.1.10+ no
+longer caches the raw key. Going further means hooking SQLCipher internals — which this project does
+not do.
 
-A probe that only looks at live UI and network surfaces misses where the data actually is. `cxa probe`
-also scans the app's on-disk store, and `--find-store` locates it automatically:
+**Verdict:** computer use is the only real way to drive this client, and the tool says so instead of
+pretending otherwise. [Read the case study](docs/weixin.md).
 
-```bash
-cxa probe Weixin --find-store "xwechat_files,wxid_,db_storage"
-# found store: C:\Users\<you>\xwechat_files\wxid_<redacted>\db_storage (24 db files, 1051131904 bytes)
-#   blocked  local-store   total=24 plaintext=0 encrypted=24 bytes=1051131904
-```
+### NetEase Cloud Music: an encrypted API, 8 of 10 tools live
 
-A plain SQLite store is a first-class layer: `available`, ranked just under an official API, and it
-needs no UI automation at all. An encrypted store is reported `blocked` with the reason, not guessed at.
-
-`cxa store` is the last mile: it reads that store - read-only, with Node own SQLite driver, no
-dependency, no key extraction:
-
-```bash
-cxa store "C:\Users\<you>\AppData\Local\NetEase\CloudMusic\NIM"        # databases and their tables
-cxa store <dir> --db msg.db --sql "select name from sqlite_master where type='table' limit 5"
-cxa store <dir> --tables --json
-```
-
-```
-friend.db  36864B
-  table friend_list
-  table friend_timetag
-  table runtime_data
-internal_appfun_pin.db  32768B
-  table pinmessage
-```
-
-One dependency-free caveat: the built-in driver (`node:sqlite`) exists from Node 22.5. On older Node
-every other `cxa` command still works and `cxa store` prints exactly what it needs.
-
-Anything that is not `SELECT` / `WITH` / `PRAGMA` / `EXPLAIN` is refused before it reaches SQLite, and
-the connection is opened read-only as well - two guards, so a typo cannot write to somebody store:
-
-```
-msg.db: read-only: only SELECT / WITH / PRAGMA / EXPLAIN statements are allowed here
-```
-
-One false positive this fixed: WebView2 and Chromium ship their own SQLite files into an app data
-directory (`declarative_performance_observer.db`, `cache.db`, `Cookies`, anything under `EBWebView`).
-They are real SQLite; they are not app data. They are now reported as `noise` and excluded from the
-counts, so a Tauri app or Discord no longer claims a readable store where there is nothing to read:
-
-```
-Only browser/WebView2 runtime databases found (declarative_performance_observer.db, cache.db).
-That directory holds no app data.
-```
-
-### Driving a native window without pixels
-
-`cxa probe` tells you the accessibility layer is available; `cxa act` is what actually presses
-things there - by name, never by coordinate:
+The web player signs every request (`params` = AES, `encSecKey` = RSA), so replaying a capture
+verbatim cannot work. One clickthrough produced 56 API requests; the generator turned them into a
+connector and flagged which bodies were encrypted. With the weapi codec plus an authored spec, **8 of
+10 tools return live data through MCP** — the other two report their real business error codes
+(`-110`, `50000005`) rather than faking success.
 
 ```bash
-cxa act notepad                                  # list controls, and which actions each exposes
-cxa act CalculatorApp --window 计算器 --autoId num7Button --invoke         # dry run: prints the plan
-cxa act CalculatorApp --window 计算器 --autoId num7Button --invoke --confirm
-cxa act notepad --set-value "hello" --name "文本编辑器" --confirm
-cxa act notepad --get-text --name "文本编辑器"     # reading needs no confirmation
+cxa har captures/netease.har --name netease --host music.163.com --augment specs/netease.json
 ```
 
-Real output on this machine (`7 + 5 =` on Calculator: four invokes, then a read back):
+[Read the case study](docs/netease.md).
+
+### Calculator and Notepad: pressing things without pixels
+
+`cxa act` drives named UI Automation controls and re-reads the tree afterwards, so it can tell you
+whether anything actually happened. Real output for `7 + 5 =`:
 
 ```
 invoke Button "七" autoId=num7Button via Invoke
@@ -150,79 +293,57 @@ invoke Button "七" autoId=num7Button via Invoke
 Text "显示为 12" autoId=CalculatorResults = "显示为 12"
 ```
 
-What it enforces, and why:
+Four rules make that safe enough to hand to an agent:
 
-| rule | behaviour |
-|---|---|
-| semantic only | `Invoke` / `Toggle` / `SelectionItem` / `Value` patterns; `--click`, `--x`, `--y`, `--screenshot`, `--key` are refused with an explanation, not silently ignored |
-| dry run by default | `--invoke` / `--set-value` print the resolved target and pattern and do nothing without `--confirm` |
-| verify after acting | the control tree is re-read; if nothing changed it says `NOT verified` and exits non-zero instead of claiming success |
-| self-drawn surfaces say so | a Qt/Flutter window with no patterns returns "computer-use is the only path" |
-| no new layer | this is the `accessibility` layer (rank 4) actually driving; official API, local store, private API and DevTools still come first |
+| Rule | Behaviour |
+| --- | --- |
+| Semantic only | `Invoke` / `Toggle` / `SelectionItem` / `Value`; `--click`, `--x`, `--y`, `--screenshot`, `--key` are refused with an explanation, not silently ignored |
+| Dry run by default | `--invoke` and `--set-value` print the resolved target and pattern and do nothing without `--confirm` |
+| Verify after acting | the tree is re-read; no change means `NOT verified` and a non-zero exit, never a claim of success |
+| Self-drawn surfaces say so | a Qt or Flutter window with no patterns reports “computer use is the only path” |
 
-Known limits: Windows only. UWP/hosted apps need `--window <title>` (or must be in the foreground),
-because a suspended app exposes an empty control tree. The same thing is also an MCP tool,
-`cxa_act`, which is a dry run unless the caller passes `confirm: true`.
-### How far WeChat key recovery actually got
+Known limits: Windows only; UWP and hosted apps need `--window <title>` (or the foreground) because a
+suspended app exposes an empty control tree. `regedit` works the other way round: modern UIA shows
+nothing, but MSAA control classes (`SysTreeView32`, `SysListView32`, `Edit`) are right there.
 
-Read-only investigation on `Weixin 4.1.15.13` (Windows), no messages touched, no admin rights:
+If you use cxa on something interesting, open a
+[Discussion](https://github.com/Zhang-Dongfang/connect-anything/discussions) with the target, your
+question, the verdict and what you did next. Negative results are welcome; they are the most useful
+thing in this README.
 
-| step | result |
-|---|---|
-| disk | `key_info.dat` is 180 bytes of high-entropy data; no key on disk |
-| memory | `ReadProcessMemory` works (1041 MB in 2.2 s, no admin); the classic WCDB `x'<key><salt>'` pattern is **absent** |
-| API hook | Frida 17.24 hooks `bcrypt.dll!BCryptDeriveKeyPBKDF2`; **zero calls** in 30 s of live use |
+## Prior art and where this differs
 
-This reproduces upstream issue wx-cli#89: **WeChat 4.1.10+ no longer caches the raw key in process memory**.
-Going further means hooking SQLCipher internals or bypassing app protections, which this project does not do.
+This corner of the ecosystem is crowded, and pretending otherwise would be dishonest. Only projects
+that were actually inspected are listed; absence here is not a claim of absence in the world.
 
-### Measured on a real machine
-
-`Weixin 4.1.15.13` (Qt, self-drawn UI):
-
-| layer | status | evidence |
-|---|---|---|
-| official-api | unknown | no vendor API registered |
-| private-api | **blocked** | 5 loopback IPC listeners only |
-| devTools | unavailable | Chromium mini-program runtime, no remote debugging port |
-| accessibility | **blocked** | `namedControls=4`; only `Qt51514QWindowIcon` / `MMUIRenderSubWindowHW` |
-| local-store | **blocked** | 24 SQLCipher databases, 1.05 GB, key not on disk and not in memory |
-| scripting | available | `weixin://` (deep link only) |
-
-Verdict: Computer Use (pixels) is the only real way to drive the WeChat desktop client. Full case study in `docs/weixin.md`.
-
-`regedit` (classic Win32) for contrast: `accessibility = available`, detected through MSAA control
-classes (`SysTreeView32`, `SysListView32`, `Edit`) even though modern UIA exposes almost nothing.
-
-The probe is also an MCP tool (`cxa_probe_app`), so an agent can ask before choosing a strategy.
-
-### Case study: NetEase Cloud Music (encrypted API)
-
-The web player signs every request (params=AES, encSecKey=RSA), so replaying a
-capture verbatim cannot work. One clickthrough produced 56 API requests; the
-generator turned them into a connector and flagged which bodies were encrypted.
-With the weapi codec plus an authored spec, 8 of 10 tools return live data through
-MCP - the remaining two report their real business error codes (-110, 50000005)
-instead of pretending to work. Full receipts: docs/netease.md.
-
-```bash
-cxa har captures/netease.har --name netease --host music.163.com --augment specs/netease.json
-```
+| Project | What it does | How this differs |
+| --- | --- | --- |
+| [morluto/rea](https://github.com/morluto/rea) | agent-driven reverse engineering, down to native binaries | REA analyses; this project owns what happens after the analysis — routing, connectors, credentials, health |
+| [alufers/mitmproxy2swagger](https://github.com/alufers/mitmproxy2swagger) | mitmproxy captures or HAR to OpenAPI 3.0 | this emits callable MCP tools; OpenAPI is a spec for other generators |
+| [hydope/har2mcp](https://github.com/hydope/har2mcp) | HAR to a standalone MCP server, secrets in env vars | same conversion step, but it comes *after* a probe that decides whether to convert at all, with a local-store layer and a router on top |
+| [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp) | browser automation over accessibility snapshots | not replaced: `devTools` and `accessibility` are layers this router sends work to |
+| [WeChat MCP/CLI projects](https://github.com/zwl467135974/wechat-cli) | decrypt the local store, or drive the UI with `wxauto` | cited as evidence in [docs/weixin.md](docs/weixin.md), not vendored; this project reports `blocked` instead of extracting keys |
 
 ## MCP tools
 
-| tool | purpose |
-|---|---|
-| `cxa_route` | pick the best layer for an app; tells the agent when computer use is unnecessary |
-| `cxa_generate_from_har` | reverse a HAR capture into a connector; tools appear immediately (`tools/list_changed`) |
-| `cxa_rea_analyze_app` | delegate static analysis of an Electron/JS app to REA and extract candidate endpoints |
-| `cxa_probe_app` | detect which layers a running desktop app supports, with evidence |
-| `cxa_list_connectors` | installed connectors, layers, missing credentials |
+Six built-in tools plus one generated tool per observed endpoint:
+
+| Tool | Purpose |
+| --- | --- |
+| `cxa_route` | pick the best layer for an app and say when computer use is unnecessary |
+| `cxa_probe_app` | detect which layers a running desktop app supports, with the evidence |
+| `cxa_generate_from_har` | reverse a capture into a connector; tools appear immediately (`tools/list_changed`) |
+| `cxa_rea_analyze_app` | hand an Electron or JavaScript app to REA and extract candidate endpoints |
+| `cxa_act` | drive a named control (dry run unless the caller passes `confirm: true`) |
+| `cxa_list_connectors` | installed connectors, their layer, and which credentials are missing |
 | `<app>__<tool>` | one generated tool per observed endpoint |
 
+`cxa store` is CLI-only for now: reading a database is a deliberate, inspectable act, and it is on the
+[roadmap](ROADMAP.md) to expose it as a tool with the same read-only guards.
 ## Use it as a Skill (process, not just tools)
 
-MCP hands an agent *tools*. A Skill hands it the *procedure*: probe first, act on the best layer, capture once, generate, verify, and stop when a layer is `blocked`. Both ship from this repo.
+MCP hands an agent tools. A Skill hands it the *procedure*: probe first, act on the best layer, capture
+once, generate, verify, and stop when a layer is `blocked`. Both ship from this repository.
 
 ```bash
 cxa skill                  # install into an existing host skills dir (~/.claude/skills, else ~/.codex/skills)
@@ -230,20 +351,24 @@ cxa skill --target <dir>   # install somewhere else
 cxa skill --check          # validate the bundled skill (frontmatter, links, size)
 ```
 
-`SKILL.md` is a ~100-line index; the three references load only when the task needs them:
+`SKILL.md` is a roughly 100-line index; the three references load only when a task needs them:
 
-| file | loaded when |
-|---|---|
+| File | Loaded when |
+| --- | --- |
 | `SKILL.md` | always: the five steps, the layer status table, the guardrails |
 | `reference/layers.md` | deciding what a probe verdict actually means |
-| `reference/connector-spec.md` | authoring or repairing a connector / augment spec |
+| `reference/connector-spec.md` | authoring or repairing a connector or augment spec |
 | `reference/policy.md` | a layer came back `blocked` and someone wants to push past it |
 
-Division of labour: the Skill decides **whether and how** to automate and refuses to defeat a `blocked` layer; the MCP server (or the `cxa` CLI when no MCP host is available) performs the calls. Installing the Skill does not create connectors for you - it stops the agent from reaching for screenshots first.
+The division of labour matters: the Skill decides **whether and how** to automate, and refuses to
+defeat a `blocked` layer; the MCP server (or the `cxa` CLI when no MCP host is available) performs the
+calls. Installing the Skill does not create connectors for you — it stops the agent from reaching for
+screenshots first.
 
 ## Connector spec
 
-A connector is a plain JSON file in `~/.connect-anything/connectors/` (shareable, reviewable, diffable):
+A connector is plain JSON in `~/.connect-anything/connectors/`, so it can be reviewed, diffed and
+shared like any other source file:
 
 ```json
 { "name": "demo", "baseUrl": "https://app.example.com", "layer": "private-api",
@@ -252,60 +377,153 @@ A connector is a plain JSON file in `~/.connect-anything/connectors/` (shareable
               "pathParams": ["project_id"], "body": { "title": { "type": "string", "required": true } } }] }
 ```
 
-A tool may also declare `codec` (`"weapi"` encrypts the request body with
-NetEase-style AES+RSA instead of sending JSON), `staticHeaders` (headers the API
-requires, e.g. `referer`), `bodyDefaults` (applied before caller arguments),
-`resultPath` (lift one JSON field into `data`), and `optional: true` on auth
+A tool may also declare `codec` (`"weapi"` encrypts the body with NetEase-style AES+RSA instead of
+sending JSON), `staticHeaders` (headers the API insists on, such as `referer`), `bodyDefaults` (applied
+before caller arguments), `resultPath` (lift one JSON field into `data`), and `optional: true` on auth
 entries that only unlock extra data.
 
-## Roadmap
+Nothing about a connector is hidden: it is the audit trail of what an agent is allowed to call.
 
-Checked items are shipped and covered by tests. Open items are ordered in [ROADMAP.md](ROADMAP.md),
-where each one links to an issue with acceptance criteria.
+## FAQ
 
-- [x] HAR -> connector, zero-dependency stdio MCP server, layered router, REA bridge
-- [x] Encrypted request envelopes (NetEase weapi: AES+RSA) + authored `--augment` specs
-- [x] Packaged as an Agent Skill (`SKILL.md` + progressive-disclosure `reference/`, `cxa skill` install / `--check`)
-- [x] Windows probe + semantic `cxa act` (UIA), run against Weixin, Calculator and Notepad
-- [x] Read-only local store reader (`cxa store`)
-- [ ] macOS / Linux facts collectors (AX + AT-SPI) - issues #3 and #4
-- [ ] Local recording proxy -> HAR, for apps with no DevTools - issue #5
-- [ ] Live capture via CDP with session reuse; WebSocket / GraphQL / gRPC-web bodies
-- [ ] Scripting layer providers (COM / AppleScript / D-Bus), self-healing connectors, connector registry
+<details>
+<summary><strong>Which agents can use connect-anything?</strong></summary>
 
-Pick something up: [good first issues](https://github.com/Zhang-Dongfang/connect-anything/labels/good%20first%20issue) or the [help-wanted list](https://github.com/Zhang-Dongfang/connect-anything/labels/help%20wanted).
+Any MCP client that can launch a stdio server. Without one, the `cxa` CLI exposes the same
+capabilities, minus the generated tools being callable from a chat.
 
-## Responsible use
+</details>
 
-For interoperability with software and accounts you own or are authorized to automate. Calling private APIs may violate a service's terms. You are responsible for compliance. Credentials stay in your environment.
+<details>
+<summary><strong>Is there an npm package?</strong></summary>
 
+No, and this is deliberate: `connect-anything` on npm belongs to a different project, so
+`npx connect-anything` would run somebody else's code. Install from
+[this repository](https://github.com/Zhang-Dongfang/connect-anything) —
+`npx -y github:Zhang-Dongfang/connect-anything …`, a clone, or `node src/cli.js`. If a package under
+this project's name ever appears, it will only be announced here first.
+
+</details>
+
+<details>
+<summary><strong>Do I need REA installed?</strong></summary>
+
+No. REA is one optional tool for static analysis of Electron and JavaScript apps. Probing, routing,
+capture-to-connector, local stores, accessibility actions and the MCP server work without it.
+
+</details>
+
+<details>
+<summary><strong>Does it upload my app, my capture or my data?</strong></summary>
+
+No. Analysis runs locally, captures stay on disk, and connectors reference environment-variable names.
+What your agent does with the *results* is governed by your model provider's data policy, not by this
+project.
+
+</details>
+
+<details>
+<summary><strong>Where do credentials live?</strong></summary>
+
+In your environment. A connector stores `CXA_<APP>_<HEADER>`, never the value. If the variable is
+missing, the tool fails with the exact name to set instead of sending an unauthenticated request.
+
+</details>
+
+<details>
+<summary><strong>Will it defeat anti-bot checks or decrypt an encrypted store?</strong></summary>
+
+No — not “not yet”, no. That is the [policy boundary](docs/architecture.md#9-安全与合规边界): a layer
+that requires it is reported `blocked` with its reason. If you have your own tool for that job, use it;
+connect-anything will keep saying `blocked` and will not route around you.
+
+</details>
+
+<details>
+<summary><strong>macOS and Linux?</strong></summary>
+
+Everything that is not Windows-specific — capture to connector, the read-only store reader, the Skill,
+`cxa list`, `cxa serve` — runs anywhere Node does. The desktop facts collector is Windows-only today;
+AX and AT-SPI collectors are tracked as issues
+[#3](https://github.com/Zhang-Dongfang/connect-anything/issues/3) and
+[#4](https://github.com/Zhang-Dongfang/connect-anything/issues/4). The CLI says “Windows only” rather
+than returning an empty verdict.
+
+</details>
+
+<details>
+<summary><strong>What should I do if I hit a bug?</strong></summary>
+
+Update first (`git pull`, or run the `npx` form again — it always fetches current `main`). Then retry
+the same task. If it persists, open an issue with the target app and version, the command you ran, the
+full output, and what you expected. A probe result that looks wrong is a bug worth reporting even if
+the verdict was technically defensible.
+
+</details>
 ## Project status
 
-0.1.0, pre-1.0: the connector format and the CLI can still change between minor versions.
-What is verified today is listed instead of promised: the test suite (unit tests plus repository
-hygiene gates), the Agent Skill validator, real probe runs on Weixin 4.1.15.13 and regedit, and
-live NetEase Cloud Music tools. CI runs the suite on Ubuntu and Windows for Node 20, 22 and 24.
+0.1.0, pre-1.0: the connector format and the CLI can still change between minor versions. What exists
+today is accounted for, not promised:
 
-Requirements: Node 20 or newer. No runtime dependencies, no build step.
+- **88 tests**, all passing locally and on CI (Ubuntu and Windows, Node 20, 22 and 24).
+- **The Skill validator** (``cxa skill --check``) refuses frontmatter that a host would silently drop.
+- **Real probe runs** on `Weixin 4.1.15.13` and `regedit`, with the fixtures kept so the judgements are
+  tested on Linux too.
+- **Live NetEase Cloud Music tools** through MCP, including the two that fail honestly.
+- **Zero runtime dependencies, no build step.** Windows only where it must be, and it says so.
 
 ## Documentation
 
-- `docs/architecture.md` - layering model, module responsibilities, extension points, policy boundary
-- `docs/weixin.md` - a full negative result, and why reporting it is the useful outcome
-- `docs/netease.md` - an encrypted API turned into working tools, including the parts that stayed broken
-- `skills/connect-anything/SKILL.md` - the workflow handed to an agent
+- [Architecture](docs/architecture.md) — the layer model, module responsibilities, the three data
+  flows, extension points and the policy boundary.
+- [Weixin case study](docs/weixin.md) — a full negative result, and why reporting it is the useful
+  outcome.
+- [NetEase case study](docs/netease.md) — an encrypted API turned into working tools, including the
+  parts that stayed broken.
+- [SKILL.md](skills/connect-anything/SKILL.md) — the workflow handed to an agent.
+- [Roadmap](ROADMAP.md) and [Contributing](CONTRIBUTING.md) — what comes next and where a change
+  belongs.
+
+Report vulnerabilities through [SECURITY.md](SECURITY.md), privately.
+
+## Roadmap
+
+Checked items are shipped and covered by tests; open items each link to an issue with acceptance
+criteria in [ROADMAP.md](ROADMAP.md).
+
+- [x] HAR → connector, zero-dependency stdio MCP server, layered router, REA bridge
+- [x] Encrypted request envelopes (NetEase weapi: AES+RSA) plus authored `--augment` specs
+- [x] Packaged as an Agent Skill (`SKILL.md` and progressive-disclosure `reference/`)
+- [x] Windows probe and semantic `cxa act` (UIA), run against Weixin, Calculator and Notepad
+- [x] Read-only local store reader (`cxa store`)
+- [ ] macOS and Linux facts collectors (AX, AT-SPI) — issues #3 and #4
+- [ ] Local recording proxy → HAR, for apps with no DevTools — issue #5
+- [ ] Live CDP capture with session reuse; WebSocket, GraphQL and gRPC-web bodies
+- [ ] Scripting providers (COM, AppleScript, D-Bus), self-healing connectors, a connector registry
+
+## Responsible use
+
+For interoperability with software and accounts you own or are authorised to automate. Calling a
+private API may violate a service's terms even when the technique works; you are responsible for
+compliance. Credentials stay in your environment, and a `blocked` verdict is not an invitation to
+route around the tool.
 
 ## Contributing
 
-Pull requests are welcome, and small ones are the norm here. You do not need an issue first: docs, tests, fixtures and small flags are reviewed as they arrive, and every pull request is labelled and answered automatically. New to the project? Start
-with the [good first issues](https://github.com/Zhang-Dongfang/connect-anything/labels/good%20first%20issue)
-or the [help-wanted list](https://github.com/Zhang-Dongfang/connect-anything/labels/help%20wanted);
-[ROADMAP.md](ROADMAP.md) says what comes next, and [CONTRIBUTING.md](CONTRIBUTING.md) has the dev
-setup, where a change belongs and the test rules. "How do I..." questions go to
-[Discussions](https://github.com/Zhang-Dongfang/connect-anything/discussions); `CODE_OF_CONDUCT.md`
-sets the expectations; security problems go through `SECURITY.md` - privately, please.
+Small pull requests are the norm here, and you do not need an issue first: docs, tests, fixtures and
+small flags are reviewed as they arrive, and every pull request is labelled automatically.
+
+- [Good first issues](https://github.com/Zhang-Dongfang/connect-anything/labels/good%20first%20issue)
+  and [help wanted](https://github.com/Zhang-Dongfang/connect-anything/labels/help%20wanted) say where
+  help is wanted, with acceptance criteria on each one.
+- [CONTRIBUTING.md](CONTRIBUTING.md) has the dev setup, where a change belongs and the test rules;
+  `npm run verify` is the whole gate.
+- “How do I…” questions go to
+  [Discussions](https://github.com/Zhang-Dongfang/connect-anything/discussions);
+  [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) sets the expectations; security problems go through
+  [SECURITY.md](SECURITY.md).
 
 ## License
 
-MIT - see [LICENSE](LICENSE). Not affiliated with REA, Tencent, NetEase or any other vendor whose
-software appears in the case studies; their terms still apply to your use of their services.
+[MIT](LICENSE). Not affiliated with REA, Tencent, NetEase or any other vendor whose software appears
+in the case studies; their terms still apply to your use of their services.
