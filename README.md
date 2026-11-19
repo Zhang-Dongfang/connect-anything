@@ -107,6 +107,9 @@ internal_appfun_pin.db  32768B
   table pinmessage
 ```
 
+One dependency-free caveat: the built-in driver (`node:sqlite`) exists from Node 22.5. On older Node
+every other `cxa` command still works and `cxa store` prints exactly what it needs.
+
 Anything that is not `SELECT` / `WITH` / `PRAGMA` / `EXPLAIN` is refused before it reaches SQLite, and
 the connection is opened read-only as well - two guards, so a typo cannot write to somebody store:
 

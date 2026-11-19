@@ -86,7 +86,8 @@ switch (cmd) {
     // node:sqlite still prints an ExperimentalWarning on load; keep the CLI output clean.
     const emit = process.emitWarning;
     process.emitWarning = (w, ...args) => (String(w).includes('SQLite is an experimental feature') ? undefined : emit.call(process, w, ...args));
-    const { openReadOnly, tableNames, runQuery } = await import('./sqlite.js');
+    const { openReadOnly, tableNames, runQuery, sqliteAvailable, SQLITE_REQUIREMENT } = await import('./sqlite.js');
+    if (!sqliteAvailable) { console.error(SQLITE_REQUIREMENT); process.exit(1); }
     process.emitWarning = emit;
     let candidates;
     if (fs.statSync(target).isDirectory()) {

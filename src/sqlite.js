@@ -1,7 +1,13 @@
 // Read-only access to a plaintext SQLite store: the last mile of the local-store layer.
 // The probe says "plaintext, readable"; this is what actually reads it - with the built-in driver
 // (Node >= 22.5) instead of a dependency, and read-only so a typo cannot write to somebody store.
-import { DatabaseSync } from 'node:sqlite';
+// node:sqlite only exists from Node 22.5. Loading it lazily keeps every other cxa command working on
+// Node 20, and lets cxa store say what it needs instead of throwing an import stack trace.
+let DatabaseSync = null;
+try { ({ DatabaseSync } = await import('node:sqlite')); } catch { DatabaseSync = null; }
+
+export const sqliteAvailable = Boolean(DatabaseSync);
+export const SQLITE_REQUIREMENT = 'cxa store needs Node >= 22.5 (built-in node:sqlite); running ' + process.version;
 
 const WRITE_WORDS = /\b(insert|update|delete|drop|alter|create|replace|attach|detach|vacuum|reindex|begin|commit|rollback|savepoint|release)\b/i;
 
@@ -13,6 +19,7 @@ export function isReadOnlySql(sql = '') {
 }
 
 export function openReadOnly(file) {
+  if (!DatabaseSync) throw new Error(SQLITE_REQUIREMENT);
   return new DatabaseSync(file, { readOnly: true });
 }
 

@@ -4,11 +4,14 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { isReadOnlySql, openReadOnly, tableNames, runQuery } from '../src/sqlite.js';
+import { isReadOnlySql, openReadOnly, tableNames, runQuery, sqliteAvailable } from '../src/sqlite.js';
+
+const noSqlite = sqliteAvailable ? false : 'node:sqlite needs Node >= 22.5';
 
 // A tiny real database, built with the same driver the CLI uses, so the tests exercise
 // the actual read path instead of a mock of it.
 function seedDb() {
+  if (!sqliteAvailable) throw new Error('node:sqlite unavailable');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cxa-sql-'));
   const file = path.join(dir, 'app.db');
   const w = new DatabaseSync(file);
@@ -27,14 +30,14 @@ test('isReadOnlySql accepts only statements that cannot write', () => {
     assert.equal(isReadOnlySql(sql), false, sql);
   }
 });
-test('tableNames lists tables and views but hides sqlite internals', () => {
+test('tableNames lists tables and views but hides sqlite internals', { skip: noSqlite }, () => {
   const db = openReadOnly(seedDb());
   try {
     assert.deepEqual(tableNames(db), [{ name: 'named', type: 'view' }, { name: 'session', type: 'table' }]);
   } finally { db.close(); }
 });
 
-test('runQuery copies rows and reports truncation honestly', () => {
+test('runQuery copies rows and reports truncation honestly', { skip: noSqlite }, () => {
   const db = openReadOnly(seedDb());
   try {
     const all = runQuery(db, 'select name from session order by id');
@@ -49,7 +52,7 @@ test('runQuery copies rows and reports truncation honestly', () => {
   } finally { db.close(); }
 });
 
-test('a write is rejected before it reaches SQLite and the file is untouched', () => {
+test('a write is rejected before it reaches SQLite and the file is untouched', { skip: noSqlite }, () => {
   const file = seedDb();
   const before = fs.statSync(file).size;
   const db = openReadOnly(file);
@@ -64,7 +67,7 @@ test('a write is rejected before it reaches SQLite and the file is untouched', (
   assert.equal(fs.statSync(file).size, before);
 });
 
-test('the file handle itself is read-only: a bypass write still cannot land', () => {
+test('the file handle itself is read-only: a bypass write still cannot land', { skip: noSqlite }, () => {
   const file = seedDb();
   const db = openReadOnly(file);
   try {

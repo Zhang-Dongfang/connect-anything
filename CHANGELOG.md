@@ -20,6 +20,7 @@ All notable changes to this project are documented here. The format follows
 ### Fixed
 
 - WebView2/Chromium runtime databases (`declarative_performance_observer.db`, `cache.db`, `Cookies`, anything under `EBWebView`) are no longer counted as an app store: they are reported as `noise` and the local-store layer says the directory holds no app data.
+- `node:sqlite` is loaded lazily: `cxa store` needs Node >= 22.5 and says so clearly, while the rest of cxa keeps working on Node 20 (CI covers 20 / 22 / 24).
 - `devTools` no longer claims "Not a Chromium app" for Tauri/WinUI apps: the Windows probe detects `msedgewebview2.exe` children and the note prints the `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222` fix.
 
 The repository is pre-1.0: interfaces can still change between minor versions.
