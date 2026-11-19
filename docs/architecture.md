@@ -202,7 +202,7 @@ tools/call <app>__<tool>{...}
 
 ## 10. 现状
 
-- 测试：**33/33**（core 6 / probe 11 / store 4 / discover 3 / netease 9）
+- 测试：**49/49**（core 6 / probe 11 / store 4 / discover 3 / netease 9 / skill 16）
 - 已实机验证：
   - **网易云音乐**：weapi AES/RSA 信封跑通，`/api/cloudsearch/pc` 匿名可用；weapi 搜索匿名返 50000005（已写入文档，不当作可用）
   - **微信 4.1.15.13**：五层全封禁，含磁盘/内存/Frida 三步取密钥实测，结论「Computer Use 或企业微信官方接口」
@@ -217,8 +217,30 @@ test/          单测 + 真实机器抓下来的 fixture
 scripts/       宿主能力（PowerShell 事实采集、Frida 实验、波动测试）
 specs/         人工撰写的 augment 规格（按 app 一档）
 docs/          案例：weixin.md、netease.md、architecture.md
+skills/        Agent Skill 包（SKILL.md + reference/，面向宿主的流程层）
 tools/         C# 互操辅助（MSAA）
 ```
 
 设计上的一条铁律：**宿主相关的“事实采集”与跨平台的“判定逻辑”严格分离**。
 前者依平台重写，后者靠 fixture 在不同平台跑同一个断言。
+
+## 12. Skill 封装（流程层）
+
+MCP 给的是**工具**，Skill 给的是**流程**。两者共用同一份判定逻辑，不重复实现：
+
+```
+host agent --(loads)--> skills/connect-anything/SKILL.md
+                            | 5 步：probe -> 按推荐层行动 -> 抓一次 -> 生成 -> 验证
+                            | 渐进加载：只有需要时才读 reference/*.md
+                            +--(calls)--> MCP server (cxa serve) 或 cxa CLI
+```
+
+- **渐进披露**：`SKILL.md` 只做索引（约 100 行 / 5 KB），`reference/layers.md`、`connector-spec.md`、
+  `policy.md` 按需加载。Skill 体量小才不会挤占宿主 agent 的上下文。
+- **单一事实源**：`test/skill.test.js` 断言 SKILL.md 里出现的每个 `cxa <cmd>` 都真在
+  `KNOWN_COMMANDS` 里、提到的每个层名都真在 `src/router.js` 里；文档写了代码没有的东西就红。
+- **可拒绝的校验**：`validateSkill()` 对 8 类坏输入说不（无 frontmatter / 名与目录不符 /
+  大写或下划线 / description 缺失或超长 / 正文超长 / 引用文件缺失）；`cxa skill --check` 是
+  开发者入口，`installSkill()` 拒绝覆盖已存在目录（除非 `--force`）。
+- **职责边界**：Skill 负责「该不该自动化、用哪一层、什么时候停」，遇到 `blocked` 要求如实
+  报告而不是继续硬啃。真正发请求的永远是 MCP 工具或 CLI：装了 Skill 不会凭空多出 endpoint。

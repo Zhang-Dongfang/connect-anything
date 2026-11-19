@@ -7,6 +7,7 @@ import { serveStdio } from './mcp.js';
 import { loadConnectors } from './connector.js';
 import { probeApp } from './probe.js';
 import { findStore } from './discover.js';
+import { installSkill, validateSkill, skillSourceDir } from './skill.js';
 import { scanStore } from './store.js';
 import { route } from './router.js';
 
@@ -57,6 +58,23 @@ switch (cmd) {
     console.log('route: ' + JSON.stringify(route(name, conns, {}, verdict).use));
     break;
   }
+  case 'skill': {
+    if (rest.includes('--check')) {
+      const r = validateSkill(skillSourceDir());
+      console.log('skill ' + r.name + ': ' + (r.ok ? 'valid' : 'INVALID') + ' (' + r.bodyLines + ' body lines, ' + r.files.length + ' files)');
+      for (const e of r.errors) console.log('  error: ' + e);
+      for (const w of r.warnings) console.log('  warn:  ' + w);
+      if (!r.ok) process.exit(1);
+      break;
+    }
+    try {
+      const r = installSkill({ target: flag('target'), force: rest.includes('--force') });
+      console.log('skill installed -> ' + r.installedTo);
+      for (const f2 of r.files) console.log('  ' + f2);
+      console.log('restart the agent or reload skills to pick it up');
+    } catch (e) { console.error(e.message); process.exit(1); }
+    break;
+  }
   case 'list':
     for (const c of loadConnectors(connectorsDir)) console.log(`${c.name} [${c.layer}] ${c.tools.length} tools  ${c.baseUrl}`);
     break;
@@ -67,6 +85,8 @@ switch (cmd) {
                                                 [--augment spec.json] merge authored schemas
   cxa probe <processName> [--store <dir>] [--find-store <hint,..>]
                                                 detect which integration layers an app supports
+  cxa skill [--target <dir>] [--force]           install the Agent Skill
+  cxa skill --check                             validate the bundled skill
   cxa list                                      list installed connectors
   cxa serve                                     run the MCP server on stdio
 

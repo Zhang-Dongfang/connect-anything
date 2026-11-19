@@ -109,6 +109,27 @@ cxa har captures/netease.har --name netease --host music.163.com --augment specs
 | `cxa_list_connectors` | installed connectors, layers, missing credentials |
 | `<app>__<tool>` | one generated tool per observed endpoint |
 
+## Use it as a Skill (process, not just tools)
+
+MCP hands an agent *tools*. A Skill hands it the *procedure*: probe first, act on the best layer, capture once, generate, verify, and stop when a layer is `blocked`. Both ship from this repo.
+
+```bash
+cxa skill                  # install into ~/.claude/skills (falls back to ~/.codex/skills)
+cxa skill --target <dir>   # install somewhere else
+cxa skill --check          # validate the bundled skill (frontmatter, links, size)
+```
+
+`SKILL.md` is a ~100-line index; the three references load only when the task needs them:
+
+| file | loaded when |
+|---|---|
+| `SKILL.md` | always: the five steps, the layer status table, the guardrails |
+| `reference/layers.md` | deciding what a probe verdict actually means |
+| `reference/connector-spec.md` | authoring or repairing a connector / augment spec |
+| `reference/policy.md` | a layer came back `blocked` and someone wants to push past it |
+
+Division of labour: the Skill decides **whether and how** to automate and refuses to defeat a `blocked` layer; the MCP server (or the `cxa` CLI when no MCP host is available) performs the calls. Installing the Skill does not create connectors for you - it stops the agent from reaching for screenshots first.
+
 ## Connector spec
 
 A connector is a plain JSON file in `~/.connect-anything/connectors/` (shareable, reviewable, diffable):
@@ -130,6 +151,7 @@ entries that only unlock extra data.
 
 - [x] HAR -> connector, zero-dependency stdio MCP server, layered router, REA bridge
 - [x] Encrypted request envelopes (NetEase weapi: AES+RSA) + authored `--augment` specs
+- [x] Packaged as an Agent Skill (`SKILL.md` + progressive-disclosure `reference/`, `cxa skill` install / `--check`)
 - [ ] Live capture via CDP (browser + Electron `--remote-debugging-port`), session reuse
 - [ ] WebSocket / GraphQL / gRPC-web endpoints
 - [ ] Scripting layer providers: Windows COM/UIA, macOS AppleScript/AX, Linux D-Bus/AT-SPI
