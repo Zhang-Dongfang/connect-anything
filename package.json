@@ -1,0 +1,11 @@
+{
+  "name": "connect-anything",
+  "version": "0.1.0",
+  "description": "Turn any app into MCP tools: reverse its private APIs from traffic, route through API > script > private API > accessibility > computer use.",
+  "type": "module",
+  "bin": { "cxa": "src/cli.js" },
+  "scripts": { "test": "node --test test/*.test.js" },
+  "engines": { "node": ">=20" },
+  "license": "MIT",
+  "keywords": ["mcp", "reverse-engineering", "har", "agent", "automation"]
+}
