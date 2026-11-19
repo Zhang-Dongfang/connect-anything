@@ -45,6 +45,7 @@ layer. Not attempted here.
 An honest probe beats a hopeful one. Without it an agent would burn a long Computer Use run against nine
 candidate layers; with it, the answer is decided in about four seconds and the reason is written down
 with evidence.
+
 ## Second pass: the local data layer (the layer the first pass missed)
 
 A fair criticism of the first pass: it only looked at live UI and network surfaces. The real data lives
@@ -55,7 +56,7 @@ on disk. `cxa probe` now scans it too.
 `cxa probe Weixin --find-store "xwechat_files,wxid_,db_storage"` auto-locates the account store:
 
 ```
-found store: C:\Users\windo\xwechat_files\wxid_om5elt4emlbs22_a6a3\db_storage (24 db files, 1051131904 bytes)
+found store: C:\Users\<you>\xwechat_files\wxid_<redacted>\db_storage (24 db files, 1051131904 bytes)
 local-store  blocked   total=24 plaintext=0 encrypted=24 bytes=1051131904
 ```
 

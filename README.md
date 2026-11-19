@@ -45,7 +45,7 @@ also scans the app's on-disk store, and `--find-store` locates it automatically:
 
 ```bash
 cxa probe Weixin --find-store "xwechat_files,wxid_,db_storage"
-# found store: C:\Users\...\wxid_...\db_storage (24 db files, 1051131904 bytes)
+# found store: C:\Users\<you>\xwechat_files\wxid_<redacted>\db_storage (24 db files, 1051131904 bytes)
 #   blocked  local-store   total=24 plaintext=0 encrypted=24 bytes=1051131904
 ```
 
@@ -164,5 +164,29 @@ entries that only unlock extra data.
 ## Responsible use
 
 For interoperability with software and accounts you own or are authorized to automate. Calling private APIs may violate a service's terms. You are responsible for compliance. Credentials stay in your environment.
+## Project status
 
-MIT License.
+0.1.0, pre-1.0: the connector format and the CLI can still change between minor versions.
+What is verified today is listed instead of promised: the test suite (unit tests plus repository
+hygiene gates), the Agent Skill validator, real probe runs on Weixin 4.1.15.13 and regedit, and
+live NetEase Cloud Music tools. CI runs the suite on Ubuntu and Windows for Node 20, 22 and 24.
+
+Requirements: Node 20 or newer. No runtime dependencies, no build step.
+
+## Documentation
+
+- `docs/architecture.md` - layering model, module responsibilities, extension points, policy boundary
+- `docs/weixin.md` - a full negative result, and why reporting it is the useful outcome
+- `docs/netease.md` - an encrypted API turned into working tools, including the parts that stayed broken
+- `skills/connect-anything/SKILL.md` - the workflow handed to an agent
+
+## Contributing
+
+Issues and pull requests are welcome. `CONTRIBUTING.md` has the dev setup, where a change belongs,
+and the test rules; `CODE_OF_CONDUCT.md` sets the expectations. Security problems go through
+`SECURITY.md` - privately, please.
+
+## License
+
+MIT - see [LICENSE](LICENSE). Not affiliated with REA, Tencent, NetEase or any other vendor whose
+software appears in the case studies; their terms still apply to your use of their services.

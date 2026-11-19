@@ -11,6 +11,7 @@ import { installSkill, validateSkill, skillSourceDir } from './skill.js';
 import { scanStore } from './store.js';
 import { route } from './router.js';
 
+const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 const [cmd, ...rest] = process.argv.slice(2);
 const flag = (n) => { const i = rest.indexOf(`--${n}`); return i >= 0 ? rest[i + 1] : undefined; };
 const connectorsDir = flag('dir') ?? process.env.CXA_CONNECTORS ?? path.join(os.homedir(), '.connect-anything', 'connectors');
@@ -78,6 +79,14 @@ switch (cmd) {
   case 'list':
     for (const c of loadConnectors(connectorsDir)) console.log(`${c.name} [${c.layer}] ${c.tools.length} tools  ${c.baseUrl}`);
     break;
+  case 'version':
+  case '--version':
+  case '-v':
+    console.log(pkg.version);
+    break;
+  case 'help':
+  case '--help':
+  case '-h':
   default:
     console.log(`connect-anything (cxa) - turn any app into MCP tools
 

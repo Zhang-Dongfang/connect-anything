@@ -1,12 +1,31 @@
 {
   "name": "connect-anything",
   "version": "0.1.0",
-  "description": "Turn any app into MCP tools: reverse its private APIs from traffic, route through API > script > private API > accessibility > computer use.",
+  "description": "Turn any app into MCP tools: reverse its private API from traffic, probe which integration layer it actually supports, and route every call to the most reliable one instead of clicking pixels.",
   "type": "module",
   "bin": { "cxa": "src/cli.js" },
   "files": ["src", "scripts", "skills", "specs", "docs"],
-  "scripts": { "test": "node --test test/*.test.js" },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "node src/cli.js skill --check",
+    "verify": "npm test && npm run check"
+  },
   "engines": { "node": ">=20" },
+  "repository": { "type": "git", "url": "git+https://github.com/OWNER/connect-anything.git" },
+  "bugs": { "url": "https://github.com/OWNER/connect-anything/issues" },
+  "homepage": "https://github.com/OWNER/connect-anything#readme",
+  "author": "connect-anything contributors",
   "license": "MIT",
-  "keywords": ["mcp", "reverse-engineering", "har", "agent", "automation"]
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "reverse-engineering",
+    "har",
+    "api",
+    "agent",
+    "automation",
+    "skill",
+    "computer-use",
+    "accessibility"
+  ]
 }

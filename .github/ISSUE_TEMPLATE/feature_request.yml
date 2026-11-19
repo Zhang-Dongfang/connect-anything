@@ -1,0 +1,24 @@
+name: Feature request
+about: A new app, layer, codec or platform this project should handle
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The app and the task
+      description: What would an agent need to do, and what blocks it today?
+    validations:
+      required: true
+  - type: textarea
+    id: probe
+    attributes:
+      label: Probe output
+      description: Paste redacted output of the probe if you ran it.
+      render: text
+  - type: checkboxes
+    id: fit
+    attributes:
+      label: Scope check
+      options:
+        - label: This can be done without extracting keys, replaying internal IPC or bypassing anti-automation controls
+          required: true

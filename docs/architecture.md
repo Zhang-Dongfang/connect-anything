@@ -202,12 +202,13 @@ tools/call <app>__<tool>{...}
 
 ## 10. 现状
 
-- 测试：**49/49**（core 6 / probe 11 / store 4 / discover 3 / netease 9 / skill 16）
+- 测试：**54/54**（core 6 / probe 11 / store 4 / discover 3 / netease 9 / skill 16 / repo 5）
 - 已实机验证：
   - **网易云音乐**：weapi AES/RSA 信封跑通，`/api/cloudsearch/pc` 匿名可用；weapi 搜索匿名返 50000005（已写入文档，不当作可用）
   - **微信 4.1.15.13**：五层全封禁，含磁盘/内存/Frida 三步取密钥实测，结论「Computer Use 或企业微信官方接口」
   - **regedit**：UIA 几乎为空但 MSAA 有 `SysTreeView32` → 无障碍层可用（防假阴性）
-- 已知缺口：删除类工具确认、macOS/Linux 探测、WebSocket、自愈重生成、真实账号回归测试
+- 仓库门禁：test/repo.test.js 检查社区文件、可发布元数据、CI 矩阵，并扫描全树的个人路径 / 账号 id / 真 token
+- 已知缺口：删除类工具确认、macOS/Linux 探测、WebSocket、自愈重生成、真实账号回归、GitHub 地址与 owner
 
 ## 11. 代码地图
 
@@ -219,6 +220,7 @@ specs/         人工撰写的 augment 规格（按 app 一档）
 docs/          案例：weixin.md、netease.md、architecture.md
 skills/        Agent Skill 包（SKILL.md + reference/，面向宿主的流程层）
 tools/         C# 互操辅助（MSAA）
+.github/       CI（Ubuntu + Windows × Node 20/22/24）、issue/PR 模板、dependabot
 ```
 
 设计上的一条铁律：**宿主相关的“事实采集”与跨平台的“判定逻辑”严格分离**。

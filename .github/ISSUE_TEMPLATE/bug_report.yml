@@ -1,0 +1,45 @@
+name: Bug report
+about: The probe, a generated tool, the MCP server or the CLI misbehaves
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks. Please do not paste tokens, cookies, account ids or full captures.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you expected versus what you got.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: The exact commands, redacted output, and the app name and version.
+      placeholder: |
+        node src/cli.js probe Weixin
+        node src/cli.js har capture.har --name myapp
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: Windows 11, Node 24.14, cxa 0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Which layer is involved
+      options:
+        - official-api
+        - local-store
+        - private-api
+        - devTools
+        - accessibility
+        - scripting
+        - computer-use
+        - not sure

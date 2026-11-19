@@ -1,0 +1,10 @@
+# Normalise line endings in the repository; working tree stays LF on every OS.
+* text=auto eol=lf
+
+# Binary assets must never be mangled.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
