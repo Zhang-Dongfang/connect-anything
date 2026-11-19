@@ -6,7 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-Nothing yet. The repository is pre-1.0: interfaces can still change between minor versions.
+### Changed
+
+- README leads with the layer decision instead of the conversion, and lists prior art (mitmproxy2swagger, har2mcp, REA, Playwright MCP, WeChat projects) with an explicit note on how this project differs.
+
+The repository is pre-1.0: interfaces can still change between minor versions.
 
 ## [0.1.0] - 2026-11-18
 

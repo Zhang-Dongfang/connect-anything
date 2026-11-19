@@ -1,6 +1,6 @@
 # connect-anything (cxa)
 
-> Turn any app into MCP tools. Reverse its private API once, then call it directly instead of clicking through screenshots.
+> Find the cheapest reliable way into an app, then turn that layer into MCP tools. Probe once, stop at the first layer that works, and keep computer use as the documented last resort.
 
 **REA** ([morluto/rea](https://github.com/morluto/rea)) answers *"how does this app work?"*.
 **connect-anything** answers *"now let my agent operate it"*: it turns what was learned into callable, tested MCP tools, and routes every request to the most reliable layer available, with computer use as the last resort.
@@ -13,6 +13,19 @@ official API  >  local data store (plain SQLite)  >  reversed private API  >  De
 
 connect-anything is a **companion**, not a fork. It calls REA (`rea-agents`, MIT) as a pinned, black-box CLI for analysis, and owns everything after analysis: connector specs, tool generation, credentials, routing, and health checks. REA upgrades only touch `src/rea.js`.
 
+## Prior art (and where this differs)
+
+This corner of the ecosystem is crowded, and pretending otherwise would be dishonest:
+
+| project | what it does | how this differs |
+|---|---|---|
+| [alufers/mitmproxy2swagger](https://github.com/alufers/mitmproxy2swagger) | mitmproxy captures or HAR to OpenAPI 3.0 | this emits callable MCP tools; OpenAPI is a spec for other generators |
+| [hydope/har2mcp](https://github.com/hydope/har2mcp) | HAR to a standalone MCP server, secrets in env vars | same conversion step; here it comes after a probe that decides whether to convert at all, and there is a local-store layer and a router on top |
+| [morluto/rea](https://github.com/morluto/rea) | agent-driven reverse engineering, down to native binaries | REA analyses; this project owns what happens after the analysis |
+| [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp) | browser automation over accessibility snapshots | not replaced: `devTools` and `accessibility` are layers this router sends work to |
+| [WeChat MCP/CLI projects](https://github.com/zwl467135974/wechat-cli) | decrypt the local store or drive the UI with `wxauto` | cited as evidence in `docs/weixin.md`, not vendored; this project reports `blocked` instead of extracting keys |
+
+Only projects that were actually inspected are listed. Absence here is not a claim of absence in the world.
 ## Quick start
 
 ```bash
