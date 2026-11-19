@@ -13,6 +13,7 @@ export const STATUS = {
 };
 
 import { rankOf } from './router.js';
+import { scanStore } from './store.js';
 
 // A window is semantically drivable when the OS exposes real controls, not just a canvas.
 const MIN_NAMED_CONTROLS = 6;
@@ -35,6 +36,18 @@ export function classify(facts, { connectors = [] } = {}) {
     has('official-api') ? ['connector installed'] : [],
     has('official-api') ? 'Official connector available.' : 'No official API connector installed. Check the vendor developer portal before automating.');
 
+  const stores = (facts.stores ?? []).filter(s => s.total > 0);
+  const plain = stores.filter(s => s.plaintext > 0);
+  const enc = stores.filter(s => s.encrypted > 0 && s.plaintext === 0);
+  const storeEvidence = stores.flatMap(s => [s.dir,
+    `total=${s.total} plaintext=${s.plaintext} encrypted=${s.encrypted} bytes=${s.totalBytes}`,
+    ...s.largest.slice(0, 2).map(f => `${f.name} ${f.size}B ${f.state}`)]);
+  add('local-store',
+    plain.length ? STATUS.AVAILABLE : enc.length ? STATUS.BLOCKED : STATUS.UNAVAILABLE,
+    storeEvidence,
+    !stores.length ? 'No local database store found.'
+      : plain.length ? 'Plain SQLite store found: readable directly for interoperability and backup, without touching the UI.'
+        : 'The local store exists but is encrypted (SQLCipher-style) and the key is not on disk. Reading it would require extracting a key from a running process or bypassing app protections; not done here. Use an official API or Computer Use instead.');
   const schemes = facts.schemes ?? [];
   add('scripting', schemes.length ? STATUS.AVAILABLE : STATUS.UNAVAILABLE, schemes.map(s => `${s.scheme}:// (${s.scope})`),
     schemes.length ? 'Only a URL protocol handler was found. That is a coarse entry point (open/deep-link), not an arbitrary command interface.'
@@ -88,6 +101,7 @@ export function classify(facts, { connectors = [] } = {}) {
     layers,
     recommended: recommended?.id ?? null,
     blocked: layers.filter(l => l.status === STATUS.BLOCKED).map(l => l.id),
+    stores: (facts.stores ?? []).map(s => ({ dir: s.dir, total: s.total, plaintext: s.plaintext, encrypted: s.encrypted })),
   };
 }
 
@@ -104,10 +118,11 @@ function defaultRunner(script, args) {
   });
 }
 
-export async function probeApp(processName, { connectors = [], runner = defaultRunner } = {}) {
+export async function probeApp(processName, { connectors = [], runner = defaultRunner, storeDirs = [] } = {}) {
   const script = SCRIPT[process.platform];
   if (!script) throw new Error(`probe is not implemented on ${process.platform} yet`);
   const raw = await runner(script, ['-ProcessName', processName]);
   const facts = JSON.parse(raw.replace(/^\uFEFF+/, '').trim());
+  facts.stores = storeDirs.map(d => scanStore(d));
   return { facts, verdict: classify(facts, { connectors }) };
 }

@@ -6,7 +6,7 @@
 **connect-anything** answers *"now let my agent operate it"*: it turns what was learned into callable, tested MCP tools, and routes every request to the most reliable layer available, with computer use as the last resort.
 
 ```
-official API / CLI / MCP  >  OS scripting (COM, AppleScript, D-Bus)  >  reversed private API  >  accessibility tree  >  computer use
+official API  >  local data store (plain SQLite)  >  reversed private API  >  DevTools  >  accessibility tree  >  OS scripting  >  computer use
 ```
 
 ## Relationship to REA
@@ -38,6 +38,33 @@ npx connect-anything probe Weixin
 
 It prints one verdict per layer with the evidence it used, and tells the router what to pick.
 
+### The local data layer
+
+A probe that only looks at live UI and network surfaces misses where the data actually is. `cxa probe`
+also scans the app's on-disk store, and `--find-store` locates it automatically:
+
+```bash
+cxa probe Weixin --find-store "xwechat_files,wxid_,db_storage"
+# found store: C:\Users\...\wxid_...\db_storage (24 db files, 1051131904 bytes)
+#   blocked  local-store   total=24 plaintext=0 encrypted=24 bytes=1051131904
+```
+
+A plain SQLite store is a first-class layer: `available`, ranked just under an official API, and it
+needs no UI automation at all. An encrypted store is reported `blocked` with the reason, not guessed at.
+
+### How far WeChat key recovery actually got
+
+Read-only investigation on `Weixin 4.1.15.13` (Windows), no messages touched, no admin rights:
+
+| step | result |
+|---|---|
+| disk | `key_info.dat` is 180 bytes of high-entropy data; no key on disk |
+| memory | `ReadProcessMemory` works (1041 MB in 2.2 s, no admin); the classic WCDB `x'<key><salt>'` pattern is **absent** |
+| API hook | Frida 17.24 hooks `bcrypt.dll!BCryptDeriveKeyPBKDF2`; **zero calls** in 30 s of live use |
+
+This reproduces upstream issue wx-cli#89: **WeChat 4.1.10+ no longer caches the raw key in process memory**.
+Going further means hooking SQLCipher internals or bypassing app protections, which this project does not do.
+
 ### Measured on a real machine
 
 `Weixin 4.1.15.13` (Qt, self-drawn UI):
@@ -48,6 +75,7 @@ It prints one verdict per layer with the evidence it used, and tells the router 
 | private-api | **blocked** | 5 loopback IPC listeners only |
 | devTools | unavailable | Chromium mini-program runtime, no remote debugging port |
 | accessibility | **blocked** | `namedControls=4`; only `Qt51514QWindowIcon` / `MMUIRenderSubWindowHW` |
+| local-store | **blocked** | 24 SQLCipher databases, 1.05 GB, key not on disk and not in memory |
 | scripting | available | `weixin://` (deep link only) |
 
 Verdict: Computer Use (pixels) is the only real way to drive the WeChat desktop client. Full case study in `docs/weixin.md`.
@@ -85,6 +113,7 @@ A connector is a plain JSON file in `~/.connect-anything/connectors/` (shareable
 - [ ] Live capture via CDP (browser + Electron `--remote-debugging-port`), session reuse
 - [ ] WebSocket / GraphQL / gRPC-web endpoints
 - [ ] Scripting layer providers: Windows COM/UIA, macOS AppleScript/AX, Linux D-Bus/AT-SPI
+- [ ] Opt-in key-recovery plugin interface (explicit, separate from the core probe)
 - [ ] macOS / Linux probes (AX + AT-SPI) mirroring scripts/probe-win.ps1
 - [ ] Self-healing: re-capture and regenerate when a connector starts failing
 - [ ] Write-safety: mark mutating tools, require confirmation

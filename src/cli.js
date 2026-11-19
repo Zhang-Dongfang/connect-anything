@@ -6,6 +6,8 @@ import { harToConnector } from './har.js';
 import { serveStdio } from './mcp.js';
 import { loadConnectors } from './connector.js';
 import { probeApp } from './probe.js';
+import { findStore } from './discover.js';
+import { scanStore } from './store.js';
 import { route } from './router.js';
 
 const [cmd, ...rest] = process.argv.slice(2);
@@ -33,7 +35,18 @@ switch (cmd) {
     const name = rest[0];
     if (!name) { console.error('usage: cxa probe <processName>'); process.exit(1); }
     const conns = loadConnectors(connectorsDir);
-    const { verdict } = await probeApp(name, { connectors: conns });
+    const hints = (flag('find-store') ?? name).split(',').map(s => s.trim()).filter(Boolean);
+    let storeDirs = [];
+    const explicit = flag('store');
+    if (explicit) storeDirs = [explicit];
+    else {
+      const hits = findStore({ hints });
+      if (hits.length) {
+        storeDirs = [hits[0].dir];
+        console.log(`found store: ${hits[0].dir} (${hits[0].dbFiles} db files, ${hits[0].dbBytes} bytes)`);
+      }
+    }
+    const { verdict } = await probeApp(name, { connectors: conns, storeDirs });
     console.log(verdict.app + ' (running: ' + verdict.running + ') -> recommended: ' + verdict.recommended);
     for (const l of verdict.layers) {
       console.log('  ' + String(l.status).padEnd(14) + l.id.padEnd(14) + l.note);
@@ -49,7 +62,8 @@ switch (cmd) {
     console.log(`connect-anything (cxa) - turn any app into MCP tools
 
   cxa har <file.har> [--name app] [--host h]   reverse a private API from traffic
-  cxa probe <processName>                       detect which integration layers an app supports
+  cxa probe <processName> [--store <dir>] [--find-store <hint,..>]
+                                                detect which integration layers an app supports
   cxa list                                      list installed connectors
   cxa serve                                     run the MCP server on stdio
 

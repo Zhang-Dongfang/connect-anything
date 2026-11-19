@@ -3,6 +3,7 @@
 // Rank = automation strength, not detection order.
 export const LAYERS = [
   { id: 'official-api', rank: 1, note: 'Official API / CLI / existing MCP server' },
+  { id: 'local-store', rank: 2.5, note: 'App local data store (read directly when it is plain SQLite)' },
   { id: 'private-api', rank: 3, note: 'Reversed private HTTP/WebSocket API (generated from traffic)' },
   { id: 'devTools', rank: 3.5, note: 'Chrome DevTools Protocol (browser or Electron/Chromium app)' },
   { id: 'accessibility', rank: 4, note: 'Accessibility tree: Windows UIA/MSAA, macOS AX, AT-SPI' },

@@ -87,3 +87,42 @@ test('layer ranks keep the documented order', () => {
   const ranks = order.map(rankOf);
   assert.deepEqual(ranks, [...ranks].sort((a, b) => a - b));
 });
+test('a plain SQLite store is an available layer (data can be read without the UI)', () => {
+  const v = classify({
+    processName: 'x', running: true, windows: [], schemes: [], listeners: [], cdpPorts: [], cdpProbe: [], instances: [],
+    stores: [{ dir: 'D:\\app\\data', total: 3, plaintext: 3, encrypted: 0, unreadable: 0, empty: 0, totalBytes: 4096,
+      largest: [{ name: 'notes.db', size: 4096, state: 'plaintext-sqlite' }] }],
+  });
+  const s = pick(v, 'local-store');
+  assert.equal(s.status, STATUS.AVAILABLE);
+  assert.match(s.note, /Plain SQLite store/);
+  assert.ok(s.evidence.some(e => e.includes('plaintext=3')));
+  assert.equal(v.recommended, 'local-store');
+});
+
+test('an encrypted store is blocked, with real WeChat-shaped evidence', () => {
+  const v = classify({
+    processName: 'Weixin', running: true, windows: [], schemes: [], listeners: [], cdpPorts: [], cdpProbe: [], instances: [],
+    stores: [{ dir: 'C:\\Users\\x\\xwechat_files\\wxid_abc\\db_storage', total: 24, plaintext: 0, encrypted: 24, unreadable: 0, empty: 0, totalBytes: 1051131904,
+      largest: [{ name: 'biz_message_0.db', size: 396455936, state: 'encrypted' }, { name: 'message_0.db', size: 249118720, state: 'encrypted' }] }],
+  });
+  const s = pick(v, 'local-store');
+  assert.equal(s.status, STATUS.BLOCKED);
+  assert.match(s.note, /SQLCipher/);
+  assert.match(s.note, /not done here/);
+  assert.ok(s.evidence.some(e => e === 'total=24 plaintext=0 encrypted=24 bytes=1051131904'));
+  assert.ok(s.evidence.some(e => e.startsWith('biz_message_0.db 396455936B')));
+  assert.ok(v.blocked.includes('local-store'));
+  assert.deepEqual(v.stores, [{ dir: 'C:\\Users\\x\\xwechat_files\\wxid_abc\\db_storage', total: 24, plaintext: 0, encrypted: 24 }]);
+});
+
+test('no store found reports unavailable, not blocked', () => {
+  const v = classify({ processName: 'x', running: true, windows: [], schemes: [], listeners: [], instances: [], stores: [] });
+  assert.equal(pick(v, 'local-store').status, STATUS.UNAVAILABLE);
+});
+
+test('local-store ranks under an official API but above a reversed private API', () => {
+  assert.ok(rankOf('official-api') < rankOf('local-store'));
+  assert.ok(rankOf('local-store') < rankOf('private-api'));
+  assert.ok(rankOf('local-store') < rankOf('computer-use'));
+});
