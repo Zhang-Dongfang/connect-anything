@@ -14,7 +14,7 @@ const REQUIRED = [
   '.github/workflows/ci.yml', '.github/PULL_REQUEST_TEMPLATE.md',
   '.github/ISSUE_TEMPLATE/bug_report.yml', '.github/ISSUE_TEMPLATE/feature_request.yml',
   '.github/workflows/pr-triage.yml', 'scripts/pr-triage.mjs',
-  'docs/architecture.md', 'skills/connect-anything/SKILL.md'
+  'AGENTS.md', 'docs/architecture.md', 'skills/connect-anything/SKILL.md'
 ];
 
 test('ships the files an open-source project is expected to have', () => {

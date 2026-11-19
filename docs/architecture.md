@@ -205,13 +205,14 @@ tools/call <app>__<tool>{...}
 
 ## 10. 现状
 
-- 测试：**88/88**（core 6 / probe 13 / store 8 / sqlite 5 / act 10 / discover 3 / netease 9 / skill 16 / repo 7 / triage 11）
+- 测试：**104/104**（core 6 / probe 17 / store 8 / sqlite 5 / act 10 / discover 3 / netease 5 / skill 17 / repo 7 / triage 11 / plugin 6 / mcpconfig 9）
 - 已实机验证：
   - **网易云音乐**：weapi AES/RSA 信封跑通，`/api/cloudsearch/pc` 匿名可用；weapi 搜索匿名返 50000005（已写入文档，不当作可用）
   - **微信 4.1.15.13**：五层全封禁，含磁盘/内存/Frida 三步取密钥实测，结论「Computer Use 或企业微信官方接口」
   - **regedit**：UIA 几乎为空但 MSAA 有 `SysTreeView32` → 无障碍层可用（防假阴性）
   - **桌面本地库**：网易云桌面 `NIM` 目录 13 个明文 SQLite，`cxa store <dir> --db msg.db --sql "..."` 真读到 `msglog` / `thread_msg_log`；Discord 与 clash-verge（Tauri）目录只剩 WebView2 runtime 库，现判为 noise，不再误报“可读库”
 - 仓库门禁：test/repo.test.js 检查社区文件、可发布元数据、CI 矩阵，并扫描全树的个人路径 / 账号 id / 真 token
+- 宿主配置门禁：test/mcpconfig.test.js 断言仓库发布的 `.mcp.json` / `.cursor/mcp.json` / `.vscode/mcp.json` / `.codex/config.toml` 与 `cxa mcp-config <host> --write --posix` 的输出逐字一致，生成的配置与发布物只要漂移就红
 - 已知缺口：删除类工具确认、macOS/Linux 探测、WebSocket、自愈重生成、真实账号回归、GitHub 地址与 owner
 
 ## 11. 代码地图
@@ -225,6 +226,9 @@ docs/          案例：weixin.md、netease.md、architecture.md
 skills/        Agent Skill 包（SKILL.md + reference/，面向宿主的流程层）
 tools/         C# 互操辅助（MSAA）
 .github/       CI（Ubuntu + Windows × Node 20/22/24）、PR 自动分诊、issue/PR 模板、dependabot
+.mcp.json     各宿主的项目级 MCP 配置：claude/cursor/vscode/codex 一份一张表，由 src/mcpconfig.js 生成
+.cursor/ .vscode/ .codex/   同上（Cursor、VS Code 工作区、Codex 项目作用域）
+AGENTS.md     非 Claude 宿主的入口：它是什么、要读哪个文件、跑哪几条命令
 ```
 
 设计上的一条铁律：**宿主相关的“事实采集”与跨平台的“判定逻辑”严格分离**。

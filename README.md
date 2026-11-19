@@ -152,6 +152,40 @@ Then optionally hand the agent the procedure as well as the tools — see
 [Use it as a Skill](#use-it-as-a-skill-process-not-just-tools). Restart the agent after changing its
 MCP configuration.
 
+### Other hosts
+
+Every MCP host speaks the same stdio protocol; only the file and the key names differ. `cxa` writes
+the shape each one reads:
+
+```bash
+cxa mcp-config claude --write   # .mcp.json                  mcpServers      (Claude Code, project)
+cxa mcp-config cursor --write   # .cursor/mcp.json           mcpServers      (Cursor, project)
+cxa mcp-config vscode --write   # .vscode/mcp.json           servers + "type": "stdio"
+cxa mcp-config copilot --write  # .copilot/mcp-config.json   mcpServers      (VS Code Copilot, global)
+cxa mcp-config codex --write    # .codex/config.toml         [mcp_servers.connect-anything]
+cxa mcp-config codex            # print the entry instead of writing anything
+cxa mcp-config --list           # every host name, with where it writes
+```
+
+The repository already ships `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json` and
+`.codex/config.toml`, so a fresh checkout usually needs only a restart of the host. On Windows,
+prefer the generator with `--write` over copying those files: only the generator knows to emit
+`cmd.exe /d /s /c npx ...`, because Node cannot spawn the `npx.cmd` shim directly - `spawn("npx")`
+fails with ENOENT, while `spawn("cmd.exe", ["/d", "/s", "/c", "npx", "--version"])` exits 0.
+`--posix` forces the plain `npx` form for a config you mean to commit or share.
+
+Codex needs neither a marketplace nor a clone:
+
+```bash
+codex mcp add connect-anything -- npx -y github:Zhang-Dongfang/connect-anything serve
+codex mcp list     # connect-anything | npx | -y github:... serve | enabled
+```
+
+Cursor and VS Code read their project files when you open the folder, and Copilot's native config
+is the same `mcpServers` shape at `~/.copilot/mcp-config.json`. Coding agents that read
+[AGENTS.md](AGENTS.md) - Codex, Cursor, Copilot, Gemini CLI - get the procedure from there, the way
+Claude Code gets it from the skill.
+
 ### Ask your agent
 
 ```text
@@ -486,7 +520,7 @@ the verdict was technically defensible.
 0.1.0, pre-1.0: the connector format and the CLI can still change between minor versions. What exists
 today is accounted for, not promised:
 
-- **95 tests**, all passing locally and on CI (Ubuntu and Windows, Node 20, 22 and 24).
+- **104 tests**, all passing locally and on CI (Ubuntu and Windows, Node 20, 22 and 24).
 - **The Skill validator** (``cxa skill --check``) refuses frontmatter that a host would silently drop.
 - **Real probe runs** on `Weixin 4.1.15.13` and `regedit`, with the fixtures kept so the judgements are
   tested on Linux too.

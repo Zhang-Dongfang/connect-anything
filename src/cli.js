@@ -11,6 +11,7 @@ import { installSkill, validateSkill, skillSourceDir } from './skill.js';
 import { classifyDbFile, scanStore } from './store.js';
 import { route } from './router.js';
 import { runAct, pickTarget, patternFor, describeTarget, rejectPixelArgs } from './act.js';
+import { HOSTS, configText, writeConfig, hostById } from './mcpconfig.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 const [cmd, ...rest] = process.argv.slice(2);
@@ -75,6 +76,29 @@ switch (cmd) {
       for (const f2 of r.files) console.log('  ' + f2);
       console.log('restart the agent or reload skills to pick it up');
     } catch (e) { console.error(e.message); process.exit(1); }
+    break;
+  }
+  case 'mcp-config': {
+    const dirFlag = flag('dir');
+    const platform = rest.includes('--windows') ? 'win32' : rest.includes('--posix') ? 'posix' : undefined;
+    const wants = rest.find((a) => !a.startsWith('--') && a !== dirFlag && a !== 'mcp-config');
+    if (rest.includes('--list') || !wants) {
+      for (const h of HOSTS) console.log('  ' + h.id.padEnd(8) + h.path.padEnd(26) + h.note);
+      console.log('');
+      console.log('  cxa mcp-config <host>            print the snippet and where it goes');
+      console.log('  cxa mcp-config <host> --write    merge it into this project (or --dir <path>)');
+      if (!wants) break;
+    }
+    const host = hostById(wants);
+    if (!host) { console.error('unknown host ' + wants + '; try: ' + HOSTS.map((h) => h.id).join(', ')); process.exit(2); }
+    if (rest.includes('--write')) {
+      const target = writeConfig(wants, { dir: dirFlag ?? process.cwd(), platform });
+      console.log('wrote ' + host.id + ' config -> ' + target);
+      if (host.format === 'toml') console.log('  project scope; for every project merge the same table into ~/.codex/config.toml');
+    } else {
+      console.log('# ' + host.path + '  -  ' + host.note);
+      process.stdout.write(configText(wants, { platform }));
+    }
     break;
   }
   case 'store': {

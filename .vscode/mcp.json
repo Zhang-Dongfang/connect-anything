@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "connect-anything": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "github:Zhang-Dongfang/connect-anything",
+        "serve"
+      ]
+    }
+  }
+}
