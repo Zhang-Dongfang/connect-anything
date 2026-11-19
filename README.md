@@ -259,17 +259,20 @@ entries that only unlock extra data.
 
 ## Roadmap
 
+Checked items are shipped and covered by tests. Open items are ordered in [ROADMAP.md](ROADMAP.md),
+where each one links to an issue with acceptance criteria.
+
 - [x] HAR -> connector, zero-dependency stdio MCP server, layered router, REA bridge
 - [x] Encrypted request envelopes (NetEase weapi: AES+RSA) + authored `--augment` specs
 - [x] Packaged as an Agent Skill (`SKILL.md` + progressive-disclosure `reference/`, `cxa skill` install / `--check`)
-- [ ] Live capture via CDP (browser + Electron `--remote-debugging-port`), session reuse
-- [ ] WebSocket / GraphQL / gRPC-web endpoints
-- [ ] Scripting layer providers: Windows COM/UIA, macOS AppleScript/AX, Linux D-Bus/AT-SPI
-- [ ] Opt-in key-recovery plugin interface (explicit, separate from the core probe)
-- [ ] macOS / Linux probes (AX + AT-SPI) mirroring scripts/probe-win.ps1
-- [ ] Self-healing: re-capture and regenerate when a connector starts failing
-- [ ] Write-safety: mark mutating tools, require confirmation
-- [ ] Community connector registry
+- [x] Windows probe + semantic `cxa act` (UIA), run against Weixin, Calculator and Notepad
+- [x] Read-only local store reader (`cxa store`)
+- [ ] macOS / Linux facts collectors (AX + AT-SPI) - issues #3 and #4
+- [ ] Local recording proxy -> HAR, for apps with no DevTools - issue #5
+- [ ] Live capture via CDP with session reuse; WebSocket / GraphQL / gRPC-web bodies
+- [ ] Scripting layer providers (COM / AppleScript / D-Bus), self-healing connectors, connector registry
+
+Pick something up: [good first issues](https://github.com/Zhang-Dongfang/connect-anything/labels/good%20first%20issue) or the [help-wanted list](https://github.com/Zhang-Dongfang/connect-anything/labels/help%20wanted).
 
 ## Responsible use
 
@@ -292,9 +295,13 @@ Requirements: Node 20 or newer. No runtime dependencies, no build step.
 
 ## Contributing
 
-Issues and pull requests are welcome. `CONTRIBUTING.md` has the dev setup, where a change belongs,
-and the test rules; `CODE_OF_CONDUCT.md` sets the expectations. Security problems go through
-`SECURITY.md` - privately, please.
+Issues and pull requests are welcome, and small ones are the norm here. New to the project? Start
+with the [good first issues](https://github.com/Zhang-Dongfang/connect-anything/labels/good%20first%20issue)
+or the [help-wanted list](https://github.com/Zhang-Dongfang/connect-anything/labels/help%20wanted);
+[ROADMAP.md](ROADMAP.md) says what comes next, and [CONTRIBUTING.md](CONTRIBUTING.md) has the dev
+setup, where a change belongs and the test rules. "How do I..." questions go to
+[Discussions](https://github.com/Zhang-Dongfang/connect-anything/discussions); `CODE_OF_CONDUCT.md`
+sets the expectations; security problems go through `SECURITY.md` - privately, please.
 
 ## License
 

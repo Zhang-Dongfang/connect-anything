@@ -22,6 +22,36 @@ skills/connect-anything/reference/policy.md.
     npm run verify   # both of the above, what CI runs
     node src/cli.js --help
 
+## Where help is wanted
+
+Every item below is scoped and has acceptance criteria in its issue. Comment on the issue before you
+start so two people do not build the same thing.
+
+| label | what it means | open now |
+|---|---|---|
+| [good first issue](https://github.com/Zhang-Dongfang/connect-anything/labels/good%20first%20issue) | under an hour, no core code | #6, #7, #8, #9 |
+| [area: probe](https://github.com/Zhang-Dongfang/connect-anything/labels/area%3A%20probe) | host fact collection, one platform per file | #3, #4, #6 |
+| [area: act](https://github.com/Zhang-Dongfang/connect-anything/labels/area%3A%20act) | semantic actions over the accessibility tree | #7 |
+| [area: connector](https://github.com/Zhang-Dongfang/connect-anything/labels/area%3A%20connector) | capture, HAR, codecs | #5 |
+| [needs: fixture](https://github.com/Zhang-Dongfang/connect-anything/labels/needs%3A%20fixture) | a capture from a real machine - the most valuable thing to donate | #6 |
+| [platform: macos](https://github.com/Zhang-Dongfang/connect-anything/labels/platform%3A%20macos) / [platform: linux](https://github.com/Zhang-Dongfang/connect-anything/labels/platform%3A%20linux) | needs a machine the maintainer does not have | #3, #4 |
+| [help wanted](https://github.com/Zhang-Dongfang/connect-anything/labels/help%20wanted) | real work, currently unowned | #3, #4, #5 |
+
+`ROADMAP.md` explains the order and what is deliberately not planned.
+
+## How we respond
+
+- Every issue gets a human response within 72 hours. If nobody answers, ping `@Zhang-Dongfang` in
+  the issue - that is a bug in our process, not a reason to give up.
+- Small pull requests are reviewed against the acceptance criteria in the issue, not against taste.
+  If you disagree with a criterion, say so in the issue: it is cheaper to agree on the shape before
+  the patch than after.
+- A pull request that cannot be merged gets a reason and, where possible, a smaller issue you can
+  finish instead.
+- Questions that are not bugs belong in
+  [Discussions](https://github.com/Zhang-Dongfang/connect-anything/discussions), so the issue list
+  stays a to-do list.
+
 ## Where does a change go?
 
 | you want to | touch | keep untouched |

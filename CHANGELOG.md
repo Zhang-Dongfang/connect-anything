@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- `ROADMAP.md` (Now / Next / Later) and a "Where help is wanted" + "How we respond" section in `CONTRIBUTING.md`: every open item links to a labelled issue with acceptance criteria, and the README points at the good-first / help-wanted filters and Discussions.
 - `cxa store <dir|file.db> [--db <name>] [--tables] [--sql "<select>"] [--limit n] [--json]` reads a plaintext SQLite store read-only through Node's built-in driver. Statements other than SELECT / WITH / PRAGMA / EXPLAIN are rejected before reaching SQLite, and the connection is opened read-only too.
 - `cxa act <processName>` and the `cxa_act` MCP tool: drive a Windows app through UI Automation semantics - list controls, `--invoke`, `--set-value`, `--get-text` by name or AutomationId. Dry run unless `--confirm` / `confirm: true`; the control tree is re-read after each action and an unchanged tree is reported as not verified; coordinate and synthetic-input flags are refused. New `src/act.js` + `scripts/uia-act.ps1`.
 - 11 new tests (read-only SQL guard, real-driver reads and truncation, runtime-database noise, WebView2 devTools): 65 total.
