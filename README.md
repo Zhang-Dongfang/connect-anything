@@ -26,6 +26,7 @@ This corner of the ecosystem is crowded, and pretending otherwise would be disho
 | [WeChat MCP/CLI projects](https://github.com/zwl467135974/wechat-cli) | decrypt the local store or drive the UI with `wxauto` | cited as evidence in `docs/weixin.md`, not vendored; this project reports `blocked` instead of extracting keys |
 
 Only projects that were actually inspected are listed. Absence here is not a claim of absence in the world.
+
 ## Quick start
 
 ```bash
@@ -277,6 +278,7 @@ Pick something up: [good first issues](https://github.com/Zhang-Dongfang/connect
 ## Responsible use
 
 For interoperability with software and accounts you own or are authorized to automate. Calling private APIs may violate a service's terms. You are responsible for compliance. Credentials stay in your environment.
+
 ## Project status
 
 0.1.0, pre-1.0: the connector format and the CLI can still change between minor versions.
