@@ -3,6 +3,28 @@
 Thanks for looking. This project is small on purpose: zero runtime dependencies, one job per
 module, and every claim in the docs traceable to a test or a recorded probe.
 
+## You do not need an issue first
+
+Open the pull request. A typo fix, a test, a fixture, a new platform file, a small flag - all of those
+are reviewed as they arrive. An issue is a placeholder for work nobody has started yet, not a ticket
+you have to buy before writing code.
+
+Two things are worth one sentence up front, either in a short issue or in the pull request itself:
+a change to `classify()` or the layer order, and anything that adds a dependency or a new public
+command. Everything else can be argued about after the code exists.
+
+## What gets merged without discussion
+
+| change | what review looks like |
+|---|---|
+| typo, comment, docs wording | merged as soon as CI is green |
+| a new test or a fixture | merged as soon as CI is green - tests are never too small |
+| a new `scripts/probe-<platform>`, `specs/<app>.json`, or a codec module | one review pass against `ROADMAP.md` |
+| a new CLI flag or MCP tool | one design sentence in the thread, then normal review |
+| a change to `classify()`, the layer order, or a new dependency | discussed first - in an issue, or in a draft pull request |
+
+Every pull request is labelled automatically from the files it touches within a minute, and gets a
+first human response within 72 hours - see "How we respond" below.
 ## What this project will not do
 
 These are product decisions, not missing features. A PR implementing them will be closed:
@@ -24,8 +46,8 @@ skills/connect-anything/reference/policy.md.
 
 ## Where help is wanted
 
-Every item below is scoped and has acceptance criteria in its issue. Comment on the issue before you
-start so two people do not build the same thing.
+Every item below is scoped and has acceptance criteria in its issue. A one-line comment avoids
+duplicate work, but it is not a requirement: a finished pull request beats a comment.
 
 | label | what it means | open now |
 |---|---|---|
@@ -41,7 +63,7 @@ start so two people do not build the same thing.
 
 ## How we respond
 
-- Every issue gets a human response within 72 hours. If nobody answers, ping `@Zhang-Dongfang` in
+- Every issue and pull request gets a human response within 72 hours. If nobody answers, ping `@Zhang-Dongfang` in
   the issue - that is a bug in our process, not a reason to give up.
 - Small pull requests are reviewed against the acceptance criteria in the issue, not against taste.
   If you disagree with a criterion, say so in the issue: it is cheaper to agree on the shape before

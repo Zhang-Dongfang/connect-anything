@@ -295,7 +295,7 @@ Requirements: Node 20 or newer. No runtime dependencies, no build step.
 
 ## Contributing
 
-Issues and pull requests are welcome, and small ones are the norm here. New to the project? Start
+Pull requests are welcome, and small ones are the norm here. You do not need an issue first: docs, tests, fixtures and small flags are reviewed as they arrive, and every pull request is labelled and answered automatically. New to the project? Start
 with the [good first issues](https://github.com/Zhang-Dongfang/connect-anything/labels/good%20first%20issue)
 or the [help-wanted list](https://github.com/Zhang-Dongfang/connect-anything/labels/help%20wanted);
 [ROADMAP.md](ROADMAP.md) says what comes next, and [CONTRIBUTING.md](CONTRIBUTING.md) has the dev

@@ -100,6 +100,7 @@ unknown      没探测过，或需要官方文档才能确认
 | `src/cli.js` | `cxa serve / har / probe / store / act / list` | — |
 | `scripts/probe-win.ps1` | Windows 事实采集：进程、监听、协议、UIA、MSAA、调试端口 | — |
 | `tools/cxa-acc.cs` | 通过 oleacc（MSAA）读老式 Win32 控件类 | — |
+| `scripts/pr-triage.mjs` | PR 自动分诊：按改动路径贴 area 标签 + 发一条首次接待（pull_request_target，从不 checkout PR 代码） | `labelsFor`, `triageComment`, `run` |
 
 **关键边界**：`probe-win.ps1` 只采集**事实**，`probe.js` 才做**判断**。所以判定规则能在 Linux CI 上用抓下来的 JSON 跑单测（`test/fixtures/*-probe.json`）。
 
@@ -204,7 +205,7 @@ tools/call <app>__<tool>{...}
 
 ## 10. 现状
 
-- 测试：**76/76**（core 6 / probe 13 / store 8 / sqlite 5 / act 10 / discover 3 / netease 9 / skill 16 / repo 6）
+- 测试：**87/87**（core 6 / probe 13 / store 8 / sqlite 5 / act 10 / discover 3 / netease 9 / skill 16 / repo 6 / triage 11）
 - 已实机验证：
   - **网易云音乐**：weapi AES/RSA 信封跑通，`/api/cloudsearch/pc` 匿名可用；weapi 搜索匿名返 50000005（已写入文档，不当作可用）
   - **微信 4.1.15.13**：五层全封禁，含磁盘/内存/Frida 三步取密钥实测，结论「Computer Use 或企业微信官方接口」
@@ -223,7 +224,7 @@ specs/         人工撰写的 augment 规格（按 app 一档）
 docs/          案例：weixin.md、netease.md、architecture.md
 skills/        Agent Skill 包（SKILL.md + reference/，面向宿主的流程层）
 tools/         C# 互操辅助（MSAA）
-.github/       CI（Ubuntu + Windows × Node 20/22/24）、issue/PR 模板、dependabot
+.github/       CI（Ubuntu + Windows × Node 20/22/24）、PR 自动分诊、issue/PR 模板、dependabot
 ```
 
 设计上的一条铁律：**宿主相关的“事实采集”与跨平台的“判定逻辑”严格分离**。

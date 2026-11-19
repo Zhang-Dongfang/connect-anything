@@ -1,5 +1,14 @@
 ## What and why
 
+No issue needed. If there is one, link it; if there is not, this paragraph is the issue.
+
+## Type
+
+- [ ] docs, typo, comments
+- [ ] test or fixture only
+- [ ] new platform probe / connector spec / codec
+- [ ] behaviour change in `src/` (say what a user would notice)
+
 ## Evidence
 
 - [ ] `npm run verify` is green (paste the tail: `tests N / pass N / fail 0`)

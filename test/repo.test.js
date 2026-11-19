@@ -13,6 +13,7 @@ const REQUIRED = [
   '.gitattributes', '.editorconfig', '.gitignore',
   '.github/workflows/ci.yml', '.github/PULL_REQUEST_TEMPLATE.md',
   '.github/ISSUE_TEMPLATE/bug_report.yml', '.github/ISSUE_TEMPLATE/feature_request.yml',
+  '.github/workflows/pr-triage.yml', 'scripts/pr-triage.mjs',
   'docs/architecture.md', 'skills/connect-anything/SKILL.md'
 ];
 

@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Pull requests are first-class now: `CONTRIBUTING.md` opens with "You do not need an issue first" and a table of what merges without discussion, the PR template no longer implies a ticket, and `.github/workflows/pr-triage.yml` plus `scripts/pr-triage.mjs` label every pull request from the paths it touches and post one greeting (72 hours, no CLA, scope). 11 new tests: 87 total.
 - `ROADMAP.md` (Now / Next / Later) and a "Where help is wanted" + "How we respond" section in `CONTRIBUTING.md`: every open item links to a labelled issue with acceptance criteria, and the README points at the good-first / help-wanted filters and Discussions.
 - `cxa store <dir|file.db> [--db <name>] [--tables] [--sql "<select>"] [--limit n] [--json]` reads a plaintext SQLite store read-only through Node's built-in driver. Statements other than SELECT / WITH / PRAGMA / EXPLAIN are rejected before reaching SQLite, and the connection is opened read-only too.
 - `cxa act <processName>` and the `cxa_act` MCP tool: drive a Windows app through UI Automation semantics - list controls, `--invoke`, `--set-value`, `--get-text` by name or AutomationId. Dry run unless `--confirm` / `confirm: true`; the control tree is re-read after each action and an unchanged tree is reported as not verified; coordinate and synthetic-input flags are refused. New `src/act.js` + `scripts/uia-act.ps1`.
@@ -35,6 +36,7 @@ both to an agent as MCP tools - with computer use as the documented last resort.
 
 ### Added
 
+- Pull requests are first-class now: `CONTRIBUTING.md` opens with "You do not need an issue first" and a table of what merges without discussion, the PR template no longer implies a ticket, and `.github/workflows/pr-triage.yml` plus `scripts/pr-triage.mjs` label every pull request from the paths it touches and post one greeting (72 hours, no CLA, scope). 11 new tests: 87 total.
 - HAR to connector conversion with path-parameter inference, credential detection (env names only),
   and authored `--augment` specs for endpoints whose schemas traffic cannot reveal.
 - Zero-dependency stdio MCP server (`cxa serve`) exposing `cxa_route`, `cxa_generate_from_har`,
