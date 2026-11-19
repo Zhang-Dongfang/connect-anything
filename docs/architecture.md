@@ -205,7 +205,7 @@ tools/call <app>__<tool>{...}
 
 ## 10. 现状
 
-- 测试：**87/87**（core 6 / probe 13 / store 8 / sqlite 5 / act 10 / discover 3 / netease 9 / skill 16 / repo 6 / triage 11）
+- 测试：**88/88**（core 6 / probe 13 / store 8 / sqlite 5 / act 10 / discover 3 / netease 9 / skill 16 / repo 7 / triage 11）
 - 已实机验证：
   - **网易云音乐**：weapi AES/RSA 信封跑通，`/api/cloudsearch/pc` 匿名可用；weapi 搜索匿名返 50000005（已写入文档，不当作可用）
   - **微信 4.1.15.13**：五层全封禁，含磁盘/内存/Frida 三步取密钥实测，结论「Computer Use 或企业微信官方接口」
