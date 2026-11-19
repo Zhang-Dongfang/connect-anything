@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { classifyDbFile, scanStore } from '../src/store.js';
+import { classifyDbFile, isRuntimeDb, scanStore } from '../src/store.js';
 
 function tmp() {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'cxa-store-'));
@@ -47,4 +47,53 @@ test('an empty directory is reported honestly', () => {
   assert.equal(r.total, 0);
   assert.match(r.note, /No database files/);
   assert.deepEqual(r.largest, []);
+});
+
+// WebView2/Tauri ship their own SQLite files into an app data directory. They are real SQLite,
+// but they hold runtime telemetry - counting them makes the probe report a readable store
+// where there is nothing to read.
+const sqlite = (pad = 200) => Buffer.concat([Buffer.from('SQLite format 3\0', 'latin1'), Buffer.alloc(pad)]);
+
+test('isRuntimeDb knows the runtime families, including the heavy_ad_ prefix', () => {
+  assert.equal(isRuntimeDb('declarative_performance_observer.db'), true);
+  assert.equal(isRuntimeDb('cache.db'), true);
+  assert.equal(isRuntimeDb('heavy_ad_intervention_opt_out.db'), true);
+  assert.equal(isRuntimeDb('heavy_ad_anything.db'), true);
+  assert.equal(isRuntimeDb('msg.db'), false);
+});
+
+test('a directory with only WebView2 runtime databases is not an app store', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'cxa-noise-'));
+  fs.writeFileSync(path.join(d, 'declarative_performance_observer.db'), sqlite());
+  fs.writeFileSync(path.join(d, 'cache.db'), sqlite());
+  const r = scanStore(d);
+  assert.equal(r.total, 0);
+  assert.equal(r.plaintext, 0);
+  assert.equal(r.totalBytes, 0);
+  assert.deepEqual(r.noise.sort(), ['cache.db', 'declarative_performance_observer.db']);
+  assert.match(r.note, /runtime databases/);
+  assert.match(r.note, /no app data/);
+  assert.deepEqual(r.largest, []);
+});
+
+test('a real store next to WebView2 noise counts only the real data', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'cxa-mixed-'));
+  fs.mkdirSync(path.join(d, 'EBWebView', 'Default'), { recursive: true });
+  fs.writeFileSync(path.join(d, 'EBWebView', 'Default', 'Local State.db'), sqlite(100));
+  fs.writeFileSync(path.join(d, 'msg.db'), sqlite(4096));
+  const r = scanStore(d);
+  assert.equal(r.total, 1);
+  assert.equal(r.plaintext, 1);
+  assert.equal(r.files[0].name, 'msg.db');
+  assert.ok(r.noise.includes('Local State.db'));
+  assert.match(r.note, /plain SQLite/);
+});
+
+test('classifyDbFile marks a database inside EBWebView as runtime even if the name is unknown', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'cxa-ebw-'));
+  fs.mkdirSync(path.join(d, 'EBWebView', 'Default'), { recursive: true });
+  const f = path.join(d, 'EBWebView', 'Default', 'something_odd.db');
+  fs.writeFileSync(f, sqlite(100));
+  assert.equal(classifyDbFile(f, 'EBWebView\\Default\\something_odd.db').runtime, true);
+  assert.equal(classifyDbFile(path.join(d, 'something_odd.db')).runtime, false);
 });

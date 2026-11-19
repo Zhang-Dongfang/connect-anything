@@ -89,6 +89,41 @@ cxa probe Weixin --find-store "xwechat_files,wxid_,db_storage"
 A plain SQLite store is a first-class layer: `available`, ranked just under an official API, and it
 needs no UI automation at all. An encrypted store is reported `blocked` with the reason, not guessed at.
 
+`cxa store` is the last mile: it reads that store - read-only, with Node own SQLite driver, no
+dependency, no key extraction:
+
+```bash
+cxa store "C:\Users\<you>\AppData\Local\NetEase\CloudMusic\NIM"        # databases and their tables
+cxa store <dir> --db msg.db --sql "select name from sqlite_master where type='table' limit 5"
+cxa store <dir> --tables --json
+```
+
+```
+friend.db  36864B
+  table friend_list
+  table friend_timetag
+  table runtime_data
+internal_appfun_pin.db  32768B
+  table pinmessage
+```
+
+Anything that is not `SELECT` / `WITH` / `PRAGMA` / `EXPLAIN` is refused before it reaches SQLite, and
+the connection is opened read-only as well - two guards, so a typo cannot write to somebody store:
+
+```
+msg.db: read-only: only SELECT / WITH / PRAGMA / EXPLAIN statements are allowed here
+```
+
+One false positive this fixed: WebView2 and Chromium ship their own SQLite files into an app data
+directory (`declarative_performance_observer.db`, `cache.db`, `Cookies`, anything under `EBWebView`).
+They are real SQLite; they are not app data. They are now reported as `noise` and excluded from the
+counts, so a Tauri app or Discord no longer claims a readable store where there is nothing to read:
+
+```
+Only browser/WebView2 runtime databases found (declarative_performance_observer.db, cache.db).
+That directory holds no app data.
+```
+
 ### How far WeChat key recovery actually got
 
 Read-only investigation on `Weixin 4.1.15.13` (Windows), no messages touched, no admin rights:

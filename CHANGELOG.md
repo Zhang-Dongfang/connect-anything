@@ -6,9 +6,19 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `cxa store <dir|file.db> [--db <name>] [--tables] [--sql "<select>"] [--limit n] [--json]` reads a plaintext SQLite store read-only through Node's built-in driver. Statements other than SELECT / WITH / PRAGMA / EXPLAIN are rejected before reaching SQLite, and the connection is opened read-only too.
+- 11 new tests (read-only SQL guard, real-driver reads and truncation, runtime-database noise, WebView2 devTools): 65 total.
+
 ### Changed
 
 - README leads with the layer decision instead of the conversion, and lists prior art (mitmproxy2swagger, har2mcp, REA, Playwright MCP, WeChat projects) with an explicit note on how this project differs.
+
+### Fixed
+
+- WebView2/Chromium runtime databases (`declarative_performance_observer.db`, `cache.db`, `Cookies`, anything under `EBWebView`) are no longer counted as an app store: they are reported as `noise` and the local-store layer says the directory holds no app data.
+- `devTools` no longer claims "Not a Chromium app" for Tauri/WinUI apps: the Windows probe detects `msedgewebview2.exe` children and the note prints the `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222` fix.
 
 The repository is pre-1.0: interfaces can still change between minor versions.
 

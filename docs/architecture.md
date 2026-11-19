@@ -93,9 +93,10 @@ unknown      没探测过，或需要官方文档才能确认
 | `src/connector.js` | 加载规格；参数 → 请求；调用 + 业务码判失败 + resultPath 裁剪 | `buildRequest`, `callTool`, `toolInputSchema` |
 | `src/weapi.js` | 编码插件示例：AES-CBC + RSA 信封（网易云 weapi） | `weapiForm`, `weapiEncrypt`, `rsaEncryptHex` |
 | `src/store.js` | 本地库扫描：判明文 SQLite / SQLCipher | `scanStore`, `classifyDbFile` |
+| `src/sqlite.js` | 只读读库：语句白名单 + 只读连接（Node 内置 node:sqlite，无依赖） | `isReadOnlySql`, `openReadOnly`, `tableNames`, `runQuery` |
 | `src/discover.js` | 按路径关键词自动定位数据目录 | `findStore`, `scoreDir` |
 | `src/rea.js` | 上游 REA 适配器（固定版本，黑盒 CLI + `--json`） | `reaAnalyzeApp`, `extractEndpoints` |
-| `src/cli.js` | `cxa serve / har / probe / list` | — |
+| `src/cli.js` | `cxa serve / har / probe / store / list` | — |
 | `scripts/probe-win.ps1` | Windows 事实采集：进程、监听、协议、UIA、MSAA、调试端口 | — |
 | `tools/cxa-acc.cs` | 通过 oleacc（MSAA）读老式 Win32 控件类 | — |
 
@@ -202,11 +203,12 @@ tools/call <app>__<tool>{...}
 
 ## 10. 现状
 
-- 测试：**54/54**（core 6 / probe 11 / store 4 / discover 3 / netease 9 / skill 16 / repo 5）
+- 测试：**65/65**（core 6 / probe 13 / store 8 / sqlite 5 / discover 3 / netease 9 / skill 16 / repo 5）
 - 已实机验证：
   - **网易云音乐**：weapi AES/RSA 信封跑通，`/api/cloudsearch/pc` 匿名可用；weapi 搜索匿名返 50000005（已写入文档，不当作可用）
   - **微信 4.1.15.13**：五层全封禁，含磁盘/内存/Frida 三步取密钥实测，结论「Computer Use 或企业微信官方接口」
   - **regedit**：UIA 几乎为空但 MSAA 有 `SysTreeView32` → 无障碍层可用（防假阴性）
+  - **桌面本地库**：网易云桌面 `NIM` 目录 13 个明文 SQLite，`cxa store <dir> --db msg.db --sql "..."` 真读到 `msglog` / `thread_msg_log`；Discord 与 clash-verge（Tauri）目录只剩 WebView2 runtime 库，现判为 noise，不再误报“可读库”
 - 仓库门禁：test/repo.test.js 检查社区文件、可发布元数据、CI 矩阵，并扫描全树的个人路径 / 账号 id / 真 token
 - 已知缺口：删除类工具确认、macOS/Linux 探测、WebSocket、自愈重生成、真实账号回归、GitHub 地址与 owner
 

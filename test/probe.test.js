@@ -126,3 +126,27 @@ test('local-store ranks under an official API but above a reversed private API',
   assert.ok(rankOf('local-store') < rankOf('private-api'));
   assert.ok(rankOf('local-store') < rankOf('computer-use'));
 });
+
+// Tauri / WinUI apps host Chromium in a child msedgewebview2.exe, so the app process itself never
+// looks Chromium. Saying "Not a Chromium app" there sends the user down the wrong path.
+test('a WebView2 app is told how to open its own DevTools, not that it is not Chromium', () => {
+  const v = classify({ processName: 'clash-verge', running: true, windows: [], schemes: [], listeners: [], cdpPorts: [], cdpProbe: [], instances: [],
+    webview2: { detected: true, pids: [4242] } });
+  const d = pick(v, 'devTools');
+  assert.equal(d.status, STATUS.UNAVAILABLE);
+  assert.match(d.note, /WebView2/);
+  assert.match(d.note, /WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222/);
+  assert.doesNotMatch(d.note, /Not a Chromium app/);
+});
+
+test('a directory holding only runtime databases stays unavailable and says why', () => {
+  const v = classify({ processName: 'Discord', running: true, windows: [], schemes: [], listeners: [], cdpPorts: [], cdpProbe: [], instances: [],
+    stores: [{ dir: 'C:\\Users\\x\\AppData\\Roaming\\discord', total: 0, plaintext: 0, encrypted: 0, unreadable: 0, empty: 0, totalBytes: 0,
+      noise: ['cache.db', 'Cookies'], largest: [] }] });
+  const s = pick(v, 'local-store');
+  assert.equal(s.status, STATUS.UNAVAILABLE);
+  assert.match(s.note, /no app data/);
+  assert.ok(s.evidence.some(e => e.includes('runtime databases only')), s.evidence.join('|'));
+  assert.ok(s.evidence.some(e => e.includes('cache.db')));
+  assert.deepEqual(v.stores, [{ dir: 'C:\\Users\\x\\AppData\\Roaming\\discord', total: 0, plaintext: 0, encrypted: 0 }]);
+});

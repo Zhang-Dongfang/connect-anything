@@ -36,7 +36,7 @@ Never attempt to defeat a `blocked` layer (key extraction, protocol reverse engi
 | recommended layer | do this | stop? |
 |---|---|---|
 | `official-api` | use the vendor's API / CLI / official MCP | yes |
-| `local-store` (available) | read the plain SQLite store read-only; no UI needed | yes |
+| `local-store` (available) | read it with `cxa store <dir> [--tables] [--sql "<select>"]` - read-only, no UI needed | yes |
 | `private-api` | capture traffic, generate a connector (step 3) | after generating |
 | `devTools` | attach over CDP; drive the page's own JS and network | after attaching |
 | `accessibility` | drive named controls (UIA / macOS AX), not coordinates | yes |

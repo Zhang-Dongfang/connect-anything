@@ -97,7 +97,18 @@ foreach ($port in @($remoteDebug | Select-Object -Unique)) {
     $cdpProbe += [pscustomobject]@{ port = [int]$port; ok = $true; body = $r.Content.Substring(0, [Math]::Min(200, $r.Content.Length)) }
   } catch { $cdpProbe += [pscustomobject]@{ port = [int]$port; ok = $false; body = $null } }
 }
-
+# WebView2 (Tauri, Edge, WinUI) hosts its Chromium runtime in msedgewebview2.exe children, so the
+# app process itself never matches a Chromium name. Checking the children fixes a false negative
+# that used to report "Not a Chromium app" for every Tauri app.
+$webview2 = [pscustomobject]@{ detected = $false; pids = @() }
+try {
+  $appPids = @($instances | Where-Object { $_.pid } | ForEach-Object { [int]$_.pid })
+  if ($appPids.Count -gt 0) {
+    $wv = @(Get-CimInstance Win32_Process -Filter "Name='msedgewebview2.exe'" -ErrorAction SilentlyContinue)
+    $hit = @($wv | Where-Object { $appPids -contains [int]$_.ParentProcessId } | ForEach-Object { [int]$_.ProcessId })
+    if ($hit.Count -gt 0) { $webview2 = [pscustomobject]@{ detected = $true; pids = @($hit) } }
+  }
+} catch {}
 [pscustomobject]@{
   platform = 'win32'
   processName = $ProcessName
@@ -108,4 +119,5 @@ foreach ($port in @($remoteDebug | Select-Object -Unique)) {
   windows = @($windows)
   cdpPorts = @($remoteDebug | Select-Object -Unique)
   cdpProbe = @($cdpProbe)
+  webview2 = $webview2
 } | ConvertTo-Json -Depth 8 -Compress

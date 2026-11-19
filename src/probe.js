@@ -36,16 +36,23 @@ export function classify(facts, { connectors = [] } = {}) {
     has('official-api') ? ['connector installed'] : [],
     has('official-api') ? 'Official connector available.' : 'No official API connector installed. Check the vendor developer portal before automating.');
 
-  const stores = (facts.stores ?? []).filter(s => s.total > 0);
+  const allStores = facts.stores ?? [];
+  const stores = allStores.filter(s => s.total > 0);
   const plain = stores.filter(s => s.plaintext > 0);
   const enc = stores.filter(s => s.encrypted > 0 && s.plaintext === 0);
+  // A directory that only holds WebView2/Chromium runtime databases is not an app store: say so
+  // instead of reporting a readable store that contains nothing an agent wants.
+  const noAppData = allStores.filter(s => s.total === 0 && (s.noise?.length ?? 0) > 0);
   const storeEvidence = stores.flatMap(s => [s.dir,
     `total=${s.total} plaintext=${s.plaintext} encrypted=${s.encrypted} bytes=${s.totalBytes}`,
     ...s.largest.slice(0, 2).map(f => `${f.name} ${f.size}B ${f.state}`)]);
   add('local-store',
     plain.length ? STATUS.AVAILABLE : enc.length ? STATUS.BLOCKED : STATUS.UNAVAILABLE,
-    storeEvidence,
-    !stores.length ? 'No local database store found.'
+    storeEvidence.length ? storeEvidence : noAppData.map(s => `${s.dir} (runtime databases only: ${s.noise.slice(0, 3).join(', ')})`),
+    !stores.length
+      ? (noAppData.length
+        ? 'Only browser/WebView2 runtime databases found. That directory holds no app data; point --store at the real data directory.'
+        : 'No local database store found.')
       : plain.length ? 'Plain SQLite store found: readable directly for interoperability and backup, without touching the UI.'
         : 'The local store exists but is encrypted (SQLCipher-style) and the key is not on disk. Reading it would require extracting a key from a running process or bypassing app protections; not done here. Use an official API or Computer Use instead.');
   const schemes = facts.schemes ?? [];
@@ -62,12 +69,16 @@ export function classify(facts, { connectors = [] } = {}) {
   const cdpPorts = facts.cdpPorts ?? [];
   const cdpOk = (facts.cdpProbe ?? []).filter(p => p.ok);
   const chromiumish = /chromium|--type=|--user-lib-dir|--remote-debugging/i.test((facts.instances ?? []).map(i => i.cmd ?? '').join(' '));
+  // WebView2 (Tauri, Edge, WinUI) hosts Chromium in msedgewebview2.exe children, so the app process
+  // itself never looks Chromium; without this the note is a false "Not a Chromium app".
+  const webview2 = facts.webview2?.detected === true;
   add('devTools',
     cdpOk.length ? STATUS.AVAILABLE : STATUS.UNAVAILABLE,
     cdpOk.length ? cdpOk.map(p => `http://127.0.0.1:${p.port}`) : cdpPorts,
     cdpOk.length ? 'Chrome DevTools Protocol reachable: full DOM and network access.'
-      : chromiumish ? 'Chromium-based processes detected but no remote debugging port is open. Restart the app with --remote-debugging-port=<port> to enable this layer.'
-        : 'Not a Chromium app.');
+      : webview2 ? 'WebView2 app (Tauri/Edge): the UI runtime is Chromium. Set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222 and restart the app to enable this layer.'
+        : chromiumish ? 'Chromium-based processes detected but no remote debugging port is open. Restart the app with --remote-debugging-port=<port> to enable this layer.'
+          : 'Not a Chromium app.');
 
   const windows = facts.windows ?? [];
   const named = windows.reduce((n, w) => n + (w.uiaNamedControl ?? 0), 0);
