@@ -84,3 +84,11 @@ test('no template placeholder points at a fake repository', () => {
   }
   assert.deepEqual(hits, [], 'replace OWNER with the real account before publishing');
 });
+test('README headings are not glued to the paragraph above', () => {
+  const lines = read('README.md').split('\n');
+  const glued = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (/^## /.test(lines[i]) && lines[i - 1].trim() !== '') glued.push(lines[i]);
+  }
+  assert.deepEqual(glued, [], 'a heading needs a blank line before it, or GitHub renders it inside the paragraph');
+});
