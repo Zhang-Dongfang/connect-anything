@@ -20,14 +20,16 @@ switch (cmd) {
     break;
   case 'har': {
     const file = rest[0];
-    if (!file) { console.error('usage: cxa har <capture.har> [--name app] [--host api.example.com] [--dir dir]'); process.exit(1); }
+    if (!file) { console.error('usage: cxa har <capture.har> [--name app] [--host api.example.com] [--augment spec.json] [--dir dir]'); process.exit(1); }
     const har = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
-    const c = harToConnector(har, { name: flag('name'), host: flag('host') });
+    const augmentFile = flag('augment');
+    const augment = augmentFile ? JSON.parse(fs.readFileSync(augmentFile, 'utf8').replace(/^\uFEFF/, '')) : undefined;
+    const c = harToConnector(har, { name: flag('name'), host: flag('host'), augment });
     fs.mkdirSync(connectorsDir, { recursive: true });
     const out = path.join(connectorsDir, `${c.name}.json`);
     fs.writeFileSync(out, JSON.stringify(c, null, 2));
     console.log(`connector "${c.name}" -> ${out}`);
-    for (const t of c.tools) console.log(`  ${t.name.padEnd(36)} ${t.method} ${t.path}`);
+    for (const t of c.tools) console.log(`  ${t.name.padEnd(36)} ${t.method} ${t.path}${t.codec ? ` [${t.codec}]` : ""}`);
     if (c.auth.length) console.log(`set credentials via env: ${c.auth.map(a => a.env).join(', ')}`);
     break;
   }
@@ -62,6 +64,7 @@ switch (cmd) {
     console.log(`connect-anything (cxa) - turn any app into MCP tools
 
   cxa har <file.har> [--name app] [--host h]   reverse a private API from traffic
+                                                [--augment spec.json] merge authored schemas
   cxa probe <processName> [--store <dir>] [--find-store <hint,..>]
                                                 detect which integration layers an app supports
   cxa list                                      list installed connectors

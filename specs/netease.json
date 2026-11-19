@@ -1,0 +1,147 @@
+{
+  "description": "NetEase Cloud Music web player. Read endpoints from the private weapi surface (AES/RSA envelope) plus plaintext /api endpoints. Anonymous calls work; set CXA_NETEASE_COOKIE (MUSIC_U=..., from a logged-in browser) to unlock play URLs, recommendations and account data.",
+  "staticHeaders": {
+    "referer": "https://music.163.com/",
+    "origin": "https://music.163.com",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+  },
+  "auth": [
+    { "header": "cookie", "env": "CXA_NETEASE_COOKIE", "optional": true }
+  ],
+  "drop": [
+    "/weapi/middle/clientcfg/config/list",
+    "/weapi/middle/device-info/web/get",
+    "/weapi/cdns",
+    "/weapi/need/login/forplay",
+    "/weapi/resource-exposure/config/batch",
+    "/weapi/privacy/info/get/v2",
+    "/weapi/copyright/pay_fee_message/config",
+    "/weapi/event/user/permission",
+    "/weapi/privilege/message/mv",
+    "/weapi/w/nuser/account/get",
+    "/weapi/user/setting",
+    "/weapi/login/qrcode/unikey",
+    "/weapi/login/qrcode/client/login",
+    "/weapi/w/user/login/type/switch",
+    "/weapi/comment/resource/comments/get",
+    "/weapi/rep/ugc/user/lyric/privilege",
+    "/m/api/encryption/param/get",
+    "/discover/g/attr"
+  ],
+  "tools": [
+    {
+      "name": "search_songs",
+      "method": "GET",
+      "path": "/api/cloudsearch/pc",
+      "description": "Search songs/albums/artists (plaintext cloudsearch). type: 1 songs, 10 albums, 100 artists, 1000 playlists",
+      "query": {
+        "s": { "type": "string", "required": true, "example": "告五人" },
+        "type": { "type": "number", "required": false, "example": 1 },
+        "limit": { "type": "number", "required": false, "example": 10 },
+        "offset": { "type": "number", "required": false, "example": 0 }
+      },
+      "resultPath": "result.songs"
+    },
+    {
+      "name": "search_songs_web",
+      "method": "POST",
+      "path": "/weapi/cloudsearch/get/web",
+      "codec": "weapi",
+      "description": "Search endpoint the web player itself calls (weapi). Anonymous replay returns code 50000005 in our tests; prefer search_songs unless you hold a session cookie.",
+      "body": {
+        "s": { "type": "string", "required": true, "example": "告五人" },
+        "type": { "type": "number", "required": false, "example": 1 },
+        "limit": { "type": "number", "required": false, "example": 10 },
+        "offset": { "type": "number", "required": false, "example": 0 }
+      },
+      "bodyDefaults": { "total": true, "csrf_token": "" }
+    },
+    {
+      "name": "song_detail",
+      "method": "POST",
+      "path": "/weapi/v3/song/detail",
+      "codec": "weapi",
+      "description": "Full song metadata for one or more ids",
+      "body": {
+        "c": { "type": "string", "required": true, "example": "[{\"id\":65538}]" }
+      },
+      "resultPath": "songs"
+    },
+    {
+      "name": "song_lyric",
+      "method": "POST",
+      "path": "/weapi/song/lyric",
+      "codec": "weapi",
+      "description": "Original / translated / romanised lyrics for a song id",
+      "body": {
+        "id": { "type": "string", "required": true, "example": "65538" },
+        "lv": { "type": "number", "required": false, "example": -1 },
+        "kv": { "type": "number", "required": false, "example": -1 },
+        "tv": { "type": "number", "required": false, "example": -1 }
+      },
+      "bodyDefaults": { "lv": -1, "kv": -1, "tv": -1 },
+      "resultPath": "lrc"
+    },
+    {
+      "name": "playlist_detail",
+      "method": "POST",
+      "path": "/weapi/v6/playlist/detail",
+      "codec": "weapi",
+      "description": "Playlist metadata and tracks (id from search type=1000 or toplist)",
+      "body": {
+        "id": { "type": "string", "required": true, "example": "3778678" },
+        "n": { "type": "number", "required": false, "example": 100 },
+        "s": { "type": "number", "required": false, "example": 8 }
+      }
+    },
+    {
+      "name": "toplist",
+      "method": "GET",
+      "path": "/api/toplist/detail",
+      "description": "All official charts (热歌榜 / 新歌榜 / 飙升榜 ...) with their playlist ids",
+      "resultPath": "list"
+    },
+    {
+      "name": "album_detail",
+      "method": "POST",
+      "path": "/weapi/v1/album/{album_id}",
+      "pathParams": ["album_id"],
+      "codec": "weapi",
+      "description": "Album metadata plus its songs"
+    },
+    {
+      "name": "artist_detail",
+      "method": "POST",
+      "path": "/weapi/v1/artist/{artist_id}",
+      "pathParams": ["artist_id"],
+      "codec": "weapi",
+      "description": "Artist profile, hot songs and albums",
+      "resultPath": "artist"
+    },
+    {
+      "name": "song_comments",
+      "method": "GET",
+      "path": "/api/v1/resource/comments/R_SO_4_{song_id}",
+      "pathParams": ["song_id"],
+      "description": "Comments of a song (R_SO_4_<songId>); most useful fields: hotComments, comments, total",
+      "query": {
+        "limit": { "type": "number", "required": false, "example": 20 },
+        "offset": { "type": "number", "required": false, "example": 0 }
+      }
+    },
+    {
+      "name": "song_url",
+      "method": "POST",
+      "path": "/weapi/song/enhance/player/url/v1",
+      "codec": "weapi",
+      "description": "Play URL for one or more song ids. Anonymous call returns code -110 / url=null; needs CXA_NETEASE_COOKIE and an account with rights.",
+      "body": {
+        "ids": { "type": "string", "required": true, "example": "[65538]" },
+        "level": { "type": "string", "required": false, "example": "standard" },
+        "encodeType": { "type": "string", "required": false, "example": "aac" }
+      },
+      "bodyDefaults": { "level": "standard", "encodeType": "aac" },
+      "resultPath": "data"
+    }
+  ]
+}

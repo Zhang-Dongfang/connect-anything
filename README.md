@@ -85,6 +85,19 @@ classes (`SysTreeView32`, `SysListView32`, `Edit`) even though modern UIA expose
 
 The probe is also an MCP tool (`cxa_probe_app`), so an agent can ask before choosing a strategy.
 
+### Case study: NetEase Cloud Music (encrypted API)
+
+The web player signs every request (params=AES, encSecKey=RSA), so replaying a
+capture verbatim cannot work. One clickthrough produced 56 API requests; the
+generator turned them into a connector and flagged which bodies were encrypted.
+With the weapi codec plus an authored spec, 8 of 10 tools return live data through
+MCP - the remaining two report their real business error codes (-110, 50000005)
+instead of pretending to work. Full receipts: docs/netease.md.
+
+```bash
+cxa har captures/netease.har --name netease --host music.163.com --augment specs/netease.json
+```
+
 ## MCP tools
 
 | tool | purpose |
@@ -107,9 +120,16 @@ A connector is a plain JSON file in `~/.connect-anything/connectors/` (shareable
               "pathParams": ["project_id"], "body": { "title": { "type": "string", "required": true } } }] }
 ```
 
+A tool may also declare `codec` (`"weapi"` encrypts the request body with
+NetEase-style AES+RSA instead of sending JSON), `staticHeaders` (headers the API
+requires, e.g. `referer`), `bodyDefaults` (applied before caller arguments),
+`resultPath` (lift one JSON field into `data`), and `optional: true` on auth
+entries that only unlock extra data.
+
 ## Roadmap
 
 - [x] HAR -> connector, zero-dependency stdio MCP server, layered router, REA bridge
+- [x] Encrypted request envelopes (NetEase weapi: AES+RSA) + authored `--augment` specs
 - [ ] Live capture via CDP (browser + Electron `--remote-debugging-port`), session reuse
 - [ ] WebSocket / GraphQL / gRPC-web endpoints
 - [ ] Scripting layer providers: Windows COM/UIA, macOS AppleScript/AX, Linux D-Bus/AT-SPI
