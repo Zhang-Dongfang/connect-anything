@@ -141,3 +141,16 @@ test('npm tarball settings ship the skill and the probe script', () => {
   assert.ok(files.includes('skills'), 'skills/ must ship so `npx connect-anything skill` can install it');
   assert.ok(files.includes('scripts'), 'scripts/probe-win.ps1 must ship for `cxa probe`');
 });
+test('a skill that sends hosts to the npm name another project owns is rejected', () => {
+  const md = [
+    '---',
+    'name: demo-skill',
+    'description: ' + GOOD_DESC,
+    '---',
+    '',
+    'Start the server with npx -y connect-' + 'anything serve.'
+  ].join('\n');
+  const r = validateSkill(makeSkill(md));
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => e.includes('different project on npm')), r.errors.join('; '));
+});

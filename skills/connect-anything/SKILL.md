@@ -7,8 +7,7 @@ description: Use when an agent must operate a real app or website (read data, tr
 
 Turn any app into MCP tools instead of clicking pixels. Probe first, act on the best layer, stop at the first one that is available.
 
-Below, cxa means 
-px -y connect-anything, or the installed cxa binary.
+Below, cxa means `npx -y github:Zhang-Dongfang/connect-anything`, or the installed cxa binary.
 
 ## 1. Probe before you automate
 
@@ -71,7 +70,7 @@ Before trusting the output, audit it:
 Either register the MCP server and use the generated tool names `<app>__<tool>`:
 
 ```json
-{ "mcpServers": { "connect-anything": { "command": "npx", "args": ["-y", "connect-anything", "serve"] } } }
+{ "mcpServers": { "connect-anything": { "command": "npx", "args": ["-y", "github:Zhang-Dongfang/connect-anything", "serve"] } } }
 ```
 
 or use the CLI directly when no MCP host is available:

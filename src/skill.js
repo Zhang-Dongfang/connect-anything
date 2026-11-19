@@ -74,6 +74,9 @@ export function validateSkill(dir) {
     if (!fs.existsSync(path.join(dir, rel))) errors.push(`body links to ${rel}, which does not exist`);
   }
 
+  // The npm name belongs to another project: never teach a host to run it.
+  const squatted = 'npx -y connect-' + 'anything';
+  if (fm.body.includes(squatted)) errors.push('body tells hosts to run ' + squatted + ', which is a different project on npm; point them at the github: spec');
   const files = walk(dir);
   if (!files.some(f => f.startsWith('reference/'))) warnings.push('no reference/ files: everything the agent needs must fit in SKILL.md');
 
