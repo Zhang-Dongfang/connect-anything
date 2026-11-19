@@ -39,7 +39,7 @@ Never attempt to defeat a `blocked` layer (key extraction, protocol reverse engi
 | `local-store` (available) | read it with `cxa store <dir> [--tables] [--sql "<select>"]` - read-only, no UI needed | yes |
 | `private-api` | capture traffic, generate a connector (step 3) | after generating |
 | `devTools` | attach over CDP; drive the page's own JS and network | after attaching |
-| `accessibility` | drive named controls (UIA / macOS AX), not coordinates | yes |
+| `accessibility` | drive named controls: `cxa act <app> --invoke --name "..."` (dry run unless `--confirm`); never coordinates | yes |
 | `scripting` only | you only get deep links (`scheme://…`); usually not enough for real work | decide with user |
 | `computer-use` | last resort: screenshots + input; requires the user's explicit go-ahead | yes |
 

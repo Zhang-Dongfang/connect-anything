@@ -10,6 +10,7 @@ import { findStore } from './discover.js';
 import { installSkill, validateSkill, skillSourceDir } from './skill.js';
 import { classifyDbFile, scanStore } from './store.js';
 import { route } from './router.js';
+import { runAct, pickTarget, patternFor, describeTarget, rejectPixelArgs } from './act.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 const [cmd, ...rest] = process.argv.slice(2);
@@ -136,7 +137,77 @@ switch (cmd) {
       }
     }
     break;
-  }  case 'list':
+  }
+  case 'act': {
+    const app = rest[0];
+    const usage = 'usage: cxa act <processName> [--list] [--name <name> | --autoId <id>] [--index n]' + String.fromCharCode(10) +
+      '               [--invoke] [--set-value <text>] [--get-text] [--window <title-regex>] [--confirm] [--json]';
+    if (!app || app.startsWith('--')) { console.error(usage); process.exit(1); }
+    const pixel = rejectPixelArgs(rest.slice(1));
+    if (pixel) {
+      console.error('refused: ' + pixel + ' addresses pixels or raw input. cxa only drives named controls'
+        + ' (invoke / set-value / get-text); use a computer-use MCP when the UI exposes no controls.');
+      process.exit(1);
+    }
+    const autoId = flag('autoId') ?? flag('auto-id') ?? '';
+    const targetName = flag('name') ?? '';
+    const targetIndex = Number(flag('index') ?? 0);
+    const winTitle = flag('window') ?? '';
+    const asJson = rest.includes('--json');
+    const action = rest.includes('--invoke') ? 'invoke'
+      : flag('set-value') !== undefined ? 'set'
+        : (rest.includes('--get-text') || rest.includes('--get')) ? 'get' : 'list';
+    const confirm = rest.includes('--confirm') || rest.includes('--yes');
+    try {
+      if (action === 'list') {
+        const snap = await runAct({ processName: app, mode: 'list', window: winTitle });
+        if (!snap.ok) { console.error('act failed: ' + snap.error); process.exit(1); }
+        if (asJson) { console.log(JSON.stringify(snap, null, 2)); break; }
+        const elements = snap.elements ?? [];
+        const actionable = elements.filter(e => (e.actions ?? []).length);
+        if (targetName || autoId) {
+          const hit = pickTarget(elements, { name: targetName, autoId, index: targetIndex });
+          if (!hit.target) { console.error(hit.reason ?? 'no match'); process.exit(1); }
+          console.log('target: ' + describeTarget(hit.target) + '  actions: ' + ((hit.target.actions ?? []).join(', ') || 'none'));
+          for (const c of hit.candidates.slice(0, 8)) console.log('  candidate: ' + describeTarget(c));
+          break;
+        }
+        console.log(app + ' (window "' + (snap.windowName ?? '') + '"): ' + snap.total + ' control(s), '
+          + elements.length + ' listed, ' + actionable.length + ' actionable');
+        for (const e of actionable.slice(0, 40)) {
+          console.log('  [' + String(e.controlType).padEnd(16) + '] ' + (e.name || '(unnamed)').slice(0, 46).padEnd(46)
+            + ' ' + String(e.autoId ?? '').padEnd(20) + ' ' + (e.actions ?? []).join(','));
+        }
+        if (!actionable.length) {
+          console.log('  no control exposes a semantic action: this is a self-drawn surface, computer-use is the only path');
+        }
+        break;
+      }
+      if (!confirm && action !== 'get') {
+        const snap = await runAct({ processName: app, mode: 'list', window: winTitle });
+        if (!snap.ok) { console.error('act failed: ' + snap.error); process.exit(1); }
+        const hit = pickTarget(snap.elements ?? [], { name: targetName, autoId, index: targetIndex });
+        if (!hit.target) { console.error(hit.reason ?? 'no match'); process.exit(1); }
+        const pattern = patternFor(hit.target, action);
+        console.log('dry run: would ' + action + ' ' + describeTarget(hit.target) + ' via ' + (pattern ?? '(no usable pattern)'));
+        console.log('add --confirm to execute');
+        if (!pattern) process.exit(1);
+        break;
+      }
+      const r = await runAct({ processName: app, mode: action, name: targetName, autoId, index: targetIndex, value: flag('set-value') ?? '', window: winTitle });
+      if (!r.ok) { console.error('act failed: ' + r.error); process.exit(1); }
+      if (asJson) { console.log(JSON.stringify(r, null, 2)); break; }
+      if (action === 'get') { console.log(describeTarget(r.target) + ' = ' + JSON.stringify(r.text ?? '')); break; }
+      console.log(action + ' ' + describeTarget(r.target) + ' via ' + r.pattern);
+      if (r.windowClosed) { console.log('  verified: the window is gone after the action'); break; }
+      const state = r.after ? r.after.element : null;
+      if (state) console.log('  now: ' + describeTarget(state) + (state.value ? '  value=' + JSON.stringify(state.value) : ''));
+      if (r.verified && r.before && r.after) console.log('  verified: control tree changed (' + r.before.signature + ' -> ' + r.after.signature + ')');
+      else { console.error('  NOT verified: ' + (r.note ?? 'no change observed')); process.exit(1); }
+      break;
+    } catch (e) { console.error(e.message); process.exit(1); }
+  }
+  case 'list':
     for (const c of loadConnectors(connectorsDir)) console.log(`${c.name} [${c.layer}] ${c.tools.length} tools  ${c.baseUrl}`);
     break;
   case 'version':
@@ -156,6 +227,8 @@ switch (cmd) {
                                                 detect which integration layers an app supports
   cxa store <dir|file.db> [--db <name>] [--tables] [--sql "<select>"]
                                                 read a plaintext SQLite store, read-only
+  cxa act <processName> [--name <n>|--autoId <id>] [--invoke|--set-value <v>|--get-text]
+                                                drive named UI Automation controls (no pixels)
   cxa skill [--target <dir>] [--force]           install the Agent Skill
   cxa skill --check                             validate the bundled skill
   cxa list                                      list installed connectors

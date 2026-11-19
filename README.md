@@ -124,6 +124,41 @@ Only browser/WebView2 runtime databases found (declarative_performance_observer.
 That directory holds no app data.
 ```
 
+### Driving a native window without pixels
+
+`cxa probe` tells you the accessibility layer is available; `cxa act` is what actually presses
+things there - by name, never by coordinate:
+
+```bash
+cxa act notepad                                  # list controls, and which actions each exposes
+cxa act CalculatorApp --window 计算器 --autoId num7Button --invoke         # dry run: prints the plan
+cxa act CalculatorApp --window 计算器 --autoId num7Button --invoke --confirm
+cxa act notepad --set-value "hello" --name "文本编辑器" --confirm
+cxa act notepad --get-text --name "文本编辑器"     # reading needs no confirmation
+```
+
+Real output on this machine (`7 + 5 =` on Calculator: four invokes, then a read back):
+
+```
+invoke Button "七" autoId=num7Button via Invoke
+  verified: control tree changed (51A09A78511AB58C -> 48082FED60764893)
+...
+Text "显示为 12" autoId=CalculatorResults = "显示为 12"
+```
+
+What it enforces, and why:
+
+| rule | behaviour |
+|---|---|
+| semantic only | `Invoke` / `Toggle` / `SelectionItem` / `Value` patterns; `--click`, `--x`, `--y`, `--screenshot`, `--key` are refused with an explanation, not silently ignored |
+| dry run by default | `--invoke` / `--set-value` print the resolved target and pattern and do nothing without `--confirm` |
+| verify after acting | the control tree is re-read; if nothing changed it says `NOT verified` and exits non-zero instead of claiming success |
+| self-drawn surfaces say so | a Qt/Flutter window with no patterns returns "computer-use is the only path" |
+| no new layer | this is the `accessibility` layer (rank 4) actually driving; official API, local store, private API and DevTools still come first |
+
+Known limits: Windows only. UWP/hosted apps need `--window <title>` (or must be in the foreground),
+because a suspended app exposes an empty control tree. The same thing is also an MCP tool,
+`cxa_act`, which is a dry run unless the caller passes `confirm: true`.
 ### How far WeChat key recovery actually got
 
 Read-only investigation on `Weixin 4.1.15.13` (Windows), no messages touched, no admin rights:

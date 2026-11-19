@@ -8,6 +8,7 @@ import { route, LAYERS } from './router.js';
 import { reaAnalyzeApp } from './rea.js';
 import { probeApp } from './probe.js';
 import { findStore } from './discover.js';
+import { runAct, pickTarget, patternFor } from './act.js';
 
 const PROTOCOL = '2025-06-18';
 const SEP = '__';
@@ -55,7 +56,34 @@ export function createServer({ connectorsDir, env = process.env, fetchImpl = fet
         return { verdict, route: route(process_name, connectors, health, verdict), facts: { windows: facts.windows, listeners: facts.listeners, schemes: facts.schemes, cdpPorts: facts.cdpPorts } };
       },
     },
-    cxa_rea_analyze_app: {
+    cxa_act: {
+      description: 'Drive a Windows app through UI Automation semantics: list its controls, then invoke / set a value / read text by name or AutomationId. Coordinates and synthetic input are not supported by design. Actions need confirm:true; otherwise this returns a dry-run plan of exactly what would be pressed.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          process_name: { type: 'string', description: 'process name, e.g. notepad, CalculatorApp' },
+          mode: { type: 'string', enum: ['list', 'invoke', 'set', 'get'], description: 'list = snapshot controls; get = read the control value' },
+          name: { type: 'string', description: 'visible control name' },
+          auto_id: { type: 'string', description: 'AutomationId, when the name is ambiguous or localized' },
+          index: { type: 'number', description: 'pick the nth match, default 0' },
+          value: { type: 'string', description: 'text for mode=set' },
+          window: { type: 'string', description: 'window title regex, needed for UWP/hosted apps' },
+          confirm: { type: 'boolean', description: 'must be true to actually act' },
+        },
+        required: ['process_name'],
+      },
+      run: async ({ process_name, mode = 'list', name, auto_id, index, value, window, confirm }) => {
+        const opts = { processName: process_name, mode, name, autoId: auto_id, index, value, window };
+        if (mode === 'list' || mode === 'get') return runAct(opts);
+        if (!confirm) {
+          const snap = await runAct({ processName: process_name, mode: 'list', window });
+          if (!snap.ok) return snap;
+          const pick = pickTarget(snap.elements ?? [], { name, autoId: auto_id, index });
+          return { dryRun: true, wouldDo: { mode, pattern: patternFor(pick.target, mode), target: pick.target ?? null }, reason: pick.reason, hint: 'call again with confirm: true to execute' };
+        }
+        return runAct(opts);
+      },
+    },    cxa_rea_analyze_app: {
       description: 'Delegate static analysis of an extracted JavaScript/Electron app (dir or .asar) to upstream REA (rea-agents). Use the findings to locate API endpoints before capturing traffic.',
       inputSchema: { type: 'object', properties: { app_path: { type: 'string', description: 'absolute path' } }, required: ['app_path'] },
       run: ({ app_path }) => reaAnalyzeApp(app_path, { runner: reaRunner }),

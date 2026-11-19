@@ -94,9 +94,10 @@ unknown      没探测过，或需要官方文档才能确认
 | `src/weapi.js` | 编码插件示例：AES-CBC + RSA 信封（网易云 weapi） | `weapiForm`, `weapiEncrypt`, `rsaEncryptHex` |
 | `src/store.js` | 本地库扫描：判明文 SQLite / SQLCipher | `scanStore`, `classifyDbFile` |
 | `src/sqlite.js` | 只读读库：语句白名单 + 只读连接（Node 内置 node:sqlite，无依赖） | `isReadOnlySql`, `openReadOnly`, `tableNames`, `runQuery` |
+| `src/act.js` | 无障碍层真驱动：按名字/AutomationId 做 invoke / set / get，动作后重读验证 | `runAct`, `pickTarget`, `patternFor`, `rejectPixelArgs` |
 | `src/discover.js` | 按路径关键词自动定位数据目录 | `findStore`, `scoreDir` |
 | `src/rea.js` | 上游 REA 适配器（固定版本，黑盒 CLI + `--json`） | `reaAnalyzeApp`, `extractEndpoints` |
-| `src/cli.js` | `cxa serve / har / probe / store / list` | — |
+| `src/cli.js` | `cxa serve / har / probe / store / act / list` | — |
 | `scripts/probe-win.ps1` | Windows 事实采集：进程、监听、协议、UIA、MSAA、调试端口 | — |
 | `tools/cxa-acc.cs` | 通过 oleacc（MSAA）读老式 Win32 控件类 | — |
 
@@ -203,7 +204,7 @@ tools/call <app>__<tool>{...}
 
 ## 10. 现状
 
-- 测试：**65/65**（core 6 / probe 13 / store 8 / sqlite 5 / discover 3 / netease 9 / skill 16 / repo 5）
+- 测试：**75/75**（core 6 / probe 13 / store 8 / sqlite 5 / act 10 / discover 3 / netease 9 / skill 16 / repo 5）
 - 已实机验证：
   - **网易云音乐**：weapi AES/RSA 信封跑通，`/api/cloudsearch/pc` 匿名可用；weapi 搜索匿名返 50000005（已写入文档，不当作可用）
   - **微信 4.1.15.13**：五层全封禁，含磁盘/内存/Frida 三步取密钥实测，结论「Computer Use 或企业微信官方接口」
