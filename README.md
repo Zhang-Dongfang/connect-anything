@@ -28,6 +28,35 @@ export CXA_MYAPP_AUTHORIZATION="Bearer ..."
 { "mcpServers": { "connect-anything": { "command": "npx", "args": ["-y", "connect-anything", "serve"] } } }
 ```
 
+## Which layer does an app actually support? (cxa probe)
+
+Guessing wastes time. Run the probe against a running desktop app before falling back to pixels.
+
+```bash
+npx connect-anything probe Weixin
+```
+
+It prints one verdict per layer with the evidence it used, and tells the router what to pick.
+
+### Measured on a real machine
+
+`Weixin 4.1.15.13` (Qt, self-drawn UI):
+
+| layer | status | evidence |
+|---|---|---|
+| official-api | unknown | no vendor API registered |
+| private-api | **blocked** | 5 loopback IPC listeners only |
+| devTools | unavailable | Chromium mini-program runtime, no remote debugging port |
+| accessibility | **blocked** | `namedControls=4`; only `Qt51514QWindowIcon` / `MMUIRenderSubWindowHW` |
+| scripting | available | `weixin://` (deep link only) |
+
+Verdict: Computer Use (pixels) is the only real way to drive the WeChat desktop client. Full case study in `docs/weixin.md`.
+
+`regedit` (classic Win32) for contrast: `accessibility = available`, detected through MSAA control
+classes (`SysTreeView32`, `SysListView32`, `Edit`) even though modern UIA exposes almost nothing.
+
+The probe is also an MCP tool (`cxa_probe_app`), so an agent can ask before choosing a strategy.
+
 ## MCP tools
 
 | tool | purpose |
@@ -35,6 +64,7 @@ export CXA_MYAPP_AUTHORIZATION="Bearer ..."
 | `cxa_route` | pick the best layer for an app; tells the agent when computer use is unnecessary |
 | `cxa_generate_from_har` | reverse a HAR capture into a connector; tools appear immediately (`tools/list_changed`) |
 | `cxa_rea_analyze_app` | delegate static analysis of an Electron/JS app to REA and extract candidate endpoints |
+| `cxa_probe_app` | detect which layers a running desktop app supports, with evidence |
 | `cxa_list_connectors` | installed connectors, layers, missing credentials |
 | `<app>__<tool>` | one generated tool per observed endpoint |
 
@@ -55,6 +85,7 @@ A connector is a plain JSON file in `~/.connect-anything/connectors/` (shareable
 - [ ] Live capture via CDP (browser + Electron `--remote-debugging-port`), session reuse
 - [ ] WebSocket / GraphQL / gRPC-web endpoints
 - [ ] Scripting layer providers: Windows COM/UIA, macOS AppleScript/AX, Linux D-Bus/AT-SPI
+- [ ] macOS / Linux probes (AX + AT-SPI) mirroring scripts/probe-win.ps1
 - [ ] Self-healing: re-capture and regenerate when a connector starts failing
 - [ ] Write-safety: mark mutating tools, require confirmation
 - [ ] Community connector registry

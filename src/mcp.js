@@ -6,6 +6,7 @@ import { loadConnectors, toolInputSchema, callTool, missingAuth } from './connec
 import { harToConnector } from './har.js';
 import { route, LAYERS } from './router.js';
 import { reaAnalyzeApp } from './rea.js';
+import { probeApp } from './probe.js';
 
 const PROTOCOL = '2025-06-18';
 const SEP = '__';
@@ -37,6 +38,14 @@ export function createServer({ connectorsDir, env = process.env, fetchImpl = fet
         fs.writeFileSync(file, JSON.stringify(c, null, 2));
         reload();
         return { installed: file, tools: c.tools.map(t => t.name), setEnv: c.auth.map(a => a.env) };
+      },
+    },
+    cxa_probe_app: {
+      description: 'Detect which automation layers an installed desktop app supports (official API, URL schemes, private API, DevTools, accessibility tree). Call this before deciding to fall back to Computer Use.',
+      inputSchema: { type: 'object', properties: { process_name: { type: 'string', description: 'e.g. Weixin, chrome, Code' } }, required: ['process_name'] },
+      run: async ({ process_name }) => {
+        const { facts, verdict } = await probeApp(process_name, { connectors });
+        return { verdict, route: route(process_name, connectors, health, verdict), facts: { windows: facts.windows, listeners: facts.listeners, schemes: facts.schemes, cdpPorts: facts.cdpPorts } };
       },
     },
     cxa_rea_analyze_app: {

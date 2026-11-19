@@ -5,6 +5,8 @@ import os from 'node:os';
 import { harToConnector } from './har.js';
 import { serveStdio } from './mcp.js';
 import { loadConnectors } from './connector.js';
+import { probeApp } from './probe.js';
+import { route } from './router.js';
 
 const [cmd, ...rest] = process.argv.slice(2);
 const flag = (n) => { const i = rest.indexOf(`--${n}`); return i >= 0 ? rest[i + 1] : undefined; };
@@ -27,6 +29,19 @@ switch (cmd) {
     if (c.auth.length) console.log(`set credentials via env: ${c.auth.map(a => a.env).join(', ')}`);
     break;
   }
+  case 'probe': {
+    const name = rest[0];
+    if (!name) { console.error('usage: cxa probe <processName>'); process.exit(1); }
+    const conns = loadConnectors(connectorsDir);
+    const { verdict } = await probeApp(name, { connectors: conns });
+    console.log(verdict.app + ' (running: ' + verdict.running + ') -> recommended: ' + verdict.recommended);
+    for (const l of verdict.layers) {
+      console.log('  ' + String(l.status).padEnd(14) + l.id.padEnd(14) + l.note);
+      for (const e of l.evidence.slice(0, 4)) console.log('              - ' + e);
+    }
+    console.log('route: ' + JSON.stringify(route(name, conns, {}, verdict).use));
+    break;
+  }
   case 'list':
     for (const c of loadConnectors(connectorsDir)) console.log(`${c.name} [${c.layer}] ${c.tools.length} tools  ${c.baseUrl}`);
     break;
@@ -34,6 +49,7 @@ switch (cmd) {
     console.log(`connect-anything (cxa) - turn any app into MCP tools
 
   cxa har <file.har> [--name app] [--host h]   reverse a private API from traffic
+  cxa probe <processName>                       detect which integration layers an app supports
   cxa list                                      list installed connectors
   cxa serve                                     run the MCP server on stdio
 
