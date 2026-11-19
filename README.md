@@ -114,7 +114,7 @@ cxa har captures/netease.har --name netease --host music.163.com --augment specs
 MCP hands an agent *tools*. A Skill hands it the *procedure*: probe first, act on the best layer, capture once, generate, verify, and stop when a layer is `blocked`. Both ship from this repo.
 
 ```bash
-cxa skill                  # install into ~/.claude/skills (falls back to ~/.codex/skills)
+cxa skill                  # install into an existing host skills dir (~/.claude/skills, else ~/.codex/skills)
 cxa skill --target <dir>   # install somewhere else
 cxa skill --check          # validate the bundled skill (frontmatter, links, size)
 ```
