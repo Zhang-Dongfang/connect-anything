@@ -13,6 +13,7 @@ All notable changes to this project are documented here. The format follows
 - `cxa act <processName>` and the `cxa_act` MCP tool: drive a Windows app through UI Automation semantics - list controls, `--invoke`, `--set-value`, `--get-text` by name or AutomationId. Dry run unless `--confirm` / `confirm: true`; the control tree is re-read after each action and an unchanged tree is reported as not verified; coordinate and synthetic-input flags are refused. New `src/act.js` + `scripts/uia-act.ps1`.
 - 11 new tests (read-only SQL guard, real-driver reads and truncation, runtime-database noise, WebView2 devTools): 65 total.
 - 10 new tests (target resolution, pattern choice, argument mapping, and a gate that the driver script contains no SendInput / SetCursorPos / SendKeys): 75 total.
+- 1 new repository test that fails on a literal OWNER placeholder in a repository URL, after the issue-template config and changelog links were found still pointing at one: 76 total.
 
 ### Changed
 
@@ -20,6 +21,7 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- The issue template config sent "report a security problem" to a literal `OWNER` placeholder instead of this repository, and the CHANGELOG compare / release links did the same: both 404ed for the first outside visitor. Fixed, and guarded by a test.
 - WebView2/Chromium runtime databases (`declarative_performance_observer.db`, `cache.db`, `Cookies`, anything under `EBWebView`) are no longer counted as an app store: they are reported as `noise` and the local-store layer says the directory holds no app data.
 - `node:sqlite` is loaded lazily: `cxa store` needs Node >= 22.5 and says so clearly, while the rest of cxa keeps working on Node 20 (CI covers 20 / 22 / 24).
 - `devTools` no longer claims "Not a Chromium app" for Tauri/WinUI apps: the Windows probe detects `msedgewebview2.exe` children and the note prints the `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222` fix.
@@ -64,5 +66,5 @@ both to an agent as MCP tools - with computer use as the documented last resort.
 - Probes beyond Windows; WebSocket, GraphQL and gRPC-web endpoints; self-healing re-generation.
 - A real CI matrix and public issue tracker start with the first published commit.
 
-[Unreleased]: https://github.com/OWNER/connect-anything/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/OWNER/connect-anything/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Zhang-Dongfang/connect-anything/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Zhang-Dongfang/connect-anything/releases/tag/v0.1.0

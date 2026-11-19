@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Questions and ideas (Discussions)
+    url: https://github.com/Zhang-Dongfang/connect-anything/discussions
+    about: How do I..., layer choices, connector reviews - anything that is not a to-do item
   - name: Security problem
-    url: https://github.com/OWNER/connect-anything/security/advisories/new
+    url: https://github.com/Zhang-Dongfang/connect-anything/security/advisories/new
     about: Report privately; please do not open a public issue

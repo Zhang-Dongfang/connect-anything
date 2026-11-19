@@ -76,3 +76,10 @@ test('README links point at files that exist', () => {
   const missing = [...new Set(links)].filter(l => l && !has(l));
   assert.deepEqual(missing, []);
 });
+test('no template placeholder points at a fake repository', () => {
+  const hits = [];
+  for (const file of walk(root)) {
+    if (fs.readFileSync(file, 'utf8').includes('github.com/' + 'OWNER/')) hits.push(path.relative(root, file));
+  }
+  assert.deepEqual(hits, [], 'replace OWNER with the real account before publishing');
+});
