@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
+import { createRequire } from 'node:module';
 import { isReadOnlySql, openReadOnly, tableNames, runQuery, sqliteAvailable } from '../src/sqlite.js';
 
 const noSqlite = sqliteAvailable ? false : 'node:sqlite needs Node >= 22.5';
@@ -14,6 +14,7 @@ function seedDb() {
   if (!sqliteAvailable) throw new Error('node:sqlite unavailable');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cxa-sql-'));
   const file = path.join(dir, 'app.db');
+  const { DatabaseSync } = createRequire(import.meta.url)('node:sqlite');
   const w = new DatabaseSync(file);
   w.exec('create table session (id integer primary key, name text)');
   w.exec('create view named as select name from session');

@@ -3,8 +3,11 @@
 // (Node >= 22.5) instead of a dependency, and read-only so a typo cannot write to somebody store.
 // node:sqlite only exists from Node 22.5. Loading it lazily keeps every other cxa command working on
 // Node 20, and lets cxa store say what it needs instead of throwing an import stack trace.
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 let DatabaseSync = null;
-try { ({ DatabaseSync } = await import('node:sqlite')); } catch { DatabaseSync = null; }
+try { ({ DatabaseSync } = require('node:sqlite')); } catch { DatabaseSync = null; }
 
 export const sqliteAvailable = Boolean(DatabaseSync);
 export const SQLITE_REQUIREMENT = 'cxa store needs Node >= 22.5 (built-in node:sqlite); running ' + process.version;
