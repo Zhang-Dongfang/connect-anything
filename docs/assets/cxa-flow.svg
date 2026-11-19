@@ -23,11 +23,11 @@
     <text x="392" y="186" font-size="14" fill="#6e7781">probe</text>
     <text x="466" y="186" font-size="12" fill="#8c959f">which layers exist, with evidence</text>
     <text x="392" y="214" font-size="14" fill="#6e7781">route</text>
-    <text x="466" y="214" font-size="12" fill="#8c959f">pick the strongest one, list fallbacks</text>
+    <text x="466" y="214" font-size="12" fill="#8c959f">pick the strongest, list fallbacks</text>
     <text x="392" y="242" font-size="14" fill="#6e7781">har</text>
     <text x="466" y="242" font-size="12" fill="#8c959f">capture to connector to tools</text>
     <text x="392" y="270" font-size="14" fill="#6e7781">store &#183; act</text>
-    <text x="466" y="270" font-size="12" fill="#8c959f">read the data, or drive named controls</text>
+    <text x="466" y="270" font-size="12" fill="#8c959f">read a store, or drive controls</text>
 
     <rect x="730" y="110" width="246" height="190" rx="14" fill="none" stroke="#8c959f" stroke-dasharray="4 4"/>
     <text x="853" y="148" font-size="17" font-weight="600" fill="#57606a" text-anchor="middle">The app</text>
