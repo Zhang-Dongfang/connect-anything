@@ -11,10 +11,10 @@
     "verify": "npm test && npm run check"
   },
   "engines": { "node": ">=20" },
-  "repository": { "type": "git", "url": "git+https://github.com/OWNER/connect-anything.git" },
-  "bugs": { "url": "https://github.com/OWNER/connect-anything/issues" },
-  "homepage": "https://github.com/OWNER/connect-anything#readme",
-  "author": "connect-anything contributors",
+  "repository": { "type": "git", "url": "git+https://github.com/Zhang-Dongfang/connect-anything.git" },
+  "bugs": { "url": "https://github.com/Zhang-Dongfang/connect-anything/issues" },
+  "homepage": "https://github.com/Zhang-Dongfang/connect-anything#readme",
+  "author": "Zhang Dongfang",
   "license": "MIT",
   "keywords": [
     "mcp",
